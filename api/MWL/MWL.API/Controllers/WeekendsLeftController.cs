@@ -22,7 +22,7 @@ namespace MWL.API.Controllers
         public WeekendsLeft Get([FromQuery] int age)
         {
             var rng = new Random();
-            var estimatedDayOfDeath = DateTime.Now.AddDays(rng.Next(500, 10000));
+            var estimatedDayOfDeath = DateTime.Now.AddDays(rng.Next(100, 20000));
             var estimatedDaysLeft = (estimatedDayOfDeath - DateTime.Now).Days;
             var estimatedAgeOfDeath = age + (estimatedDaysLeft / 365);
             var estimatedWeekendsLeft = estimatedDaysLeft / 7;
@@ -32,7 +32,7 @@ namespace MWL.API.Controllers
                 EstimatedDayOfDeath = estimatedDayOfDeath,
                 EstimatedAgeOfDeath = estimatedAgeOfDeath,
                 EstimatedWeekendsLeft = estimatedWeekendsLeft,
-                Summary = $"You have {estimatedWeekendsLeft} weekends left in your life, enjoy!"
+                Summary = $"You have an estiamted {estimatedWeekendsLeft} weekends left in your life, enjoy!"
             };
 
             return weekendsLeft;
