@@ -32,7 +32,7 @@ namespace MWL.API.Controllers
                 EstimatedDayOfDeath = estimatedDayOfDeath,
                 EstimatedAgeOfDeath = estimatedAgeOfDeath,
                 EstimatedWeekendsLeft = estimatedWeekendsLeft,
-                Summary = $"You have an estiamted {estimatedWeekendsLeft} weekends left in your life, get out there and enjoy it!!! (5th change)"
+                Summary = $"You have an estiamted {estimatedWeekendsLeft} weekends left in your life, get out there and enjoy it!!! (6th change)"
             };
 
             return weekendsLeft;
