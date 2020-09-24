@@ -10,6 +10,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using MWL.Domain.Implementation;
+using MWL.Domain.Interface;
 
 namespace MWL.API
 {
@@ -26,6 +28,7 @@ namespace MWL.API
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            services.AddScoped<IWeekendsLeftService, WeekendsLeftService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
