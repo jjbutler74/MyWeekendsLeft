@@ -4,6 +4,6 @@ namespace MWL.Models
 {
     public class WeekendsLeftRequest
     {
-        public int age { get; set; }
+        public int Age { get; set; }
     }
 }

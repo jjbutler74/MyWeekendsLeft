@@ -15,7 +15,7 @@ namespace MWL.Domain.Implementation
             var rng = new Random();
             var estimatedDayOfDeath = DateTime.Now.AddDays(rng.Next(100, 20000));
             var estimatedDaysLeft = (estimatedDayOfDeath - DateTime.Now).Days;
-            var estimatedAgeOfDeath = weekendsLeftRequest.age + (estimatedDaysLeft / 365);
+            var estimatedAgeOfDeath = weekendsLeftRequest.Age + (estimatedDaysLeft / 365);
             var estimatedWeekendsLeft = estimatedDaysLeft / 7;
 
             var weekendsLeftResponse = new WeekendsLeftResponse
@@ -23,7 +23,7 @@ namespace MWL.Domain.Implementation
                 EstimatedDayOfDeath = estimatedDayOfDeath,
                 EstimatedAgeOfDeath = estimatedAgeOfDeath,
                 EstimatedWeekendsLeft = estimatedWeekendsLeft,
-                Summary = $"You have an estiamted {estimatedWeekendsLeft} weekends left in your life, get out there and enjoy it!)"
+                Summary = $"You have an estiamted {estimatedWeekendsLeft} weekends left in your life, get out there and enjoy it!"
             };
             return weekendsLeftResponse;
         }
