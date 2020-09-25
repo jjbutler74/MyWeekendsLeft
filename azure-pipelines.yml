@@ -40,7 +40,7 @@ steps:
       **\*test*.dll
       !**\*TestAdapter.dll
       !**\obj\**
-    searchFolder: '$(System.DefaultWorkingDirectory)'
+    searchFolder: '$(System.DefaultWorkingDirectory)\Test'
 
 - task: PublishBuildArtifacts@1    
   displayName: 'Publish Artifact: drop'
