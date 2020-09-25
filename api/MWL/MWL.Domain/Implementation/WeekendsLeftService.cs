@@ -12,19 +12,31 @@ namespace MWL.Domain.Implementation
     {
         public WeekendsLeftResponse GetWeekendsLeft(WeekendsLeftRequest weekendsLeftRequest)
         {
+            var weekendsLeftResponse = new WeekendsLeftResponse();
+
+            // Validations - TODO: move to seperate area
+            if (weekendsLeftRequest == null)
+            {
+                weekendsLeftResponse.Summary = "Cannot sumbit a blank request";
+                return weekendsLeftResponse;
+            }
+            if (weekendsLeftRequest.Age < 0)
+            {
+                weekendsLeftResponse.Summary = "Cannot sumbit an negative age";
+                return weekendsLeftResponse;
+            }
+
             var rng = new Random();
             var estimatedDayOfDeath = DateTime.Now.AddDays(rng.Next(100, 20000));
             var estimatedDaysLeft = (estimatedDayOfDeath - DateTime.Now).Days;
             var estimatedAgeOfDeath = weekendsLeftRequest.Age + (estimatedDaysLeft / 365);
             var estimatedWeekendsLeft = estimatedDaysLeft / 7;
 
-            var weekendsLeftResponse = new WeekendsLeftResponse
-            {
-                EstimatedDayOfDeath = estimatedDayOfDeath,
-                EstimatedAgeOfDeath = estimatedAgeOfDeath,
-                EstimatedWeekendsLeft = estimatedWeekendsLeft,
-                Summary = $"You have an estiamted {estimatedWeekendsLeft} weekends left in your life, get out there and enjoy it!"
-            };
+            weekendsLeftResponse.EstimatedDayOfDeath = estimatedDayOfDeath;
+            weekendsLeftResponse.EstimatedAgeOfDeath = estimatedAgeOfDeath;
+            weekendsLeftResponse.EstimatedWeekendsLeft = estimatedWeekendsLeft;
+            weekendsLeftResponse.Summary = $"You have an estiamted {estimatedWeekendsLeft} weekends left in your life, get out there and enjoy it!";
+            
             return weekendsLeftResponse;
         }
     }
