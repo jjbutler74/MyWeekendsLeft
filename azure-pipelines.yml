@@ -31,22 +31,14 @@ steps:
 - task: VSTest@2
   inputs:
     testSelector: 'testAssemblies'
+    codeCoverageEnabled: true
     testAssemblyVer2: |
-      **\bin\$(BuildConfiguration)\**\*test*.dll
-      !**\obj\**
-      !**\xunit.runner.visualstudio.testadapter.dll
-      !**\xunit.runner.visualstudio.dotnetcore.testadapter.dll
-    searchFolder: '$(System.DefaultWorkingDirectory)'
-
-- task: VSTest@2
-  inputs:
-    testSelector: 'testAssemblies'
-    testAssemblyVer2: |
-      **\*test*.dll
+      **\*tests.dll
       !**\*TestAdapter.dll
       !**\obj\**
     searchFolder: '$(System.DefaultWorkingDirectory)'
-    
+    otherConsoleOptions: '/Framework:.NETCoreApp,Version=3.1'
+
 - task: PublishBuildArtifacts@1    
   displayName: 'Publish Artifact: drop'
   inputs:
