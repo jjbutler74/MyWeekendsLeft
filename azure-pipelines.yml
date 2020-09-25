@@ -37,10 +37,11 @@ steps:
   inputs:
     testSelector: 'testAssemblies'
     testAssemblyVer2: |
-      **\*test*.dll
-      !**\*TestAdapter.dll
+      **\bin\$(BuildConfiguration)\**\*test*.dll
       !**\obj\**
-    searchFolder: '$(System.DefaultWorkingDirectory)\Tests'
+      !**\xunit.runner.visualstudio.testadapter.dll
+      !**\xunit.runner.visualstudio.dotnetcore.testadapter.dll
+    searchFolder: '$(System.DefaultWorkingDirectory)'
 
 - task: PublishBuildArtifacts@1    
   displayName: 'Publish Artifact: drop'
