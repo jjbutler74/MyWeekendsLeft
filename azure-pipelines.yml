@@ -30,11 +30,6 @@ steps:
 
 - task: VSTest@2
   inputs:
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
-
-- task: VSTest@2
-  inputs:
     testSelector: 'testAssemblies'
     testAssemblyVer2: |
       **\bin\$(BuildConfiguration)\**\*test*.dll
@@ -43,6 +38,11 @@ steps:
       !**\xunit.runner.visualstudio.dotnetcore.testadapter.dll
     searchFolder: '$(System.DefaultWorkingDirectory)'
 
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: 'XUnit'
+    testResultsFiles: '**/TEST-*.xml'
+    
 - task: PublishBuildArtifacts@1    
   displayName: 'Publish Artifact: drop'
   inputs:
