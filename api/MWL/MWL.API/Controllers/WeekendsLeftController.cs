@@ -27,7 +27,7 @@ namespace MWL.API.Controllers
         {
             var weekendsLeftRequest = new WeekendsLeftRequest
             {
-                age = age
+                Age = age
             };
 
             var weekendsLeftResponse = _weekendsLeftService.GetWeekendsLeft(weekendsLeftRequest);
