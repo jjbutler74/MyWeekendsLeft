@@ -1,4 +1,4 @@
-using MWL.Domain.Implementation;
+using MWL.Services.Implementation;
 using MWL.Models;
 using Xunit;
 
@@ -41,7 +41,7 @@ namespace MWL.Services.Tests
             var weekendsLeftResponse = weekendsLeftService.GetWeekendsLeft(weekendsLeftRequest);
 
             // Assert
-            Assert.Contains("Cannot", weekendsLeftResponse.Summary);
+            Assert.Contains("'Age' must be between 1 and 120. You entered -5.", weekendsLeftResponse.Errors);
         }
 
         [Fact]
@@ -59,8 +59,8 @@ namespace MWL.Services.Tests
             var weekendsLeftResponse = weekendsLeftService.GetWeekendsLeft(weekendsLeftRequest);
 
             // Assert
-            Assert.StartsWith("You have an estiamted", weekendsLeftResponse.Summary);
-            Assert.EndsWith("weekends left in your life, get out there and enjoy it!", weekendsLeftResponse.Summary);
+            Assert.StartsWith("You have an estimated", weekendsLeftResponse.Message);
+            Assert.EndsWith("weekends left in your life, get out there and enjoy it!", weekendsLeftResponse.Message);
         }
     }
 }

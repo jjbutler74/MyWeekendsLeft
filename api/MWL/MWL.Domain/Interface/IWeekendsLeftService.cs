@@ -1,9 +1,6 @@
 ﻿using MWL.Models;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace MWL.Domain.Interface
+namespace MWL.Services.Interface
 {
     public interface IWeekendsLeftService
     {
