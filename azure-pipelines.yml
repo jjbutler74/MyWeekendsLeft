@@ -37,8 +37,14 @@ steps:
       !**\*TestAdapter.dll
       !**\obj\**
     searchFolder: '$(System.DefaultWorkingDirectory)'
-    otherConsoleOptions: '/Framework:.NETCoreApp,Version=3.1'
+    otherConsoleOptions: '/Framework:.NETCoreApp,Version=3.1 /Logger:trx'
 
+- task: PublishTestResults@2
+  displayName: 'Publish Test Results'
+  inputs:
+   testResultsFormat: 'VSTest'
+   testResultsFiles: '$(Common.TestResultsDirectory)/**/*.trx'
+   
 - task: PublishBuildArtifacts@1    
   displayName: 'Publish Artifact: drop'
   inputs:
