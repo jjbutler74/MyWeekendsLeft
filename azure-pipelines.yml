@@ -37,7 +37,7 @@ steps:
       !**\*TestAdapter.dll
       !**\obj\**
     searchFolder: '$(System.DefaultWorkingDirectory)'
-    otherConsoleOptions: '/Framework:.NETCoreApp,Version=3.1 /Logger:trx'
+    otherConsoleOptions: '/Framework:.NETCoreApp,Version=3.1 /ResultsDirectory:$(Common.TestResultsDirectory) /Logger:trx'
 
 - task: PublishTestResults@2
   displayName: 'Publish Test Results'
