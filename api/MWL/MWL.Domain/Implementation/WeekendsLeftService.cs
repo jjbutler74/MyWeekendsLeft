@@ -1,12 +1,10 @@
-﻿using MWL.Domain.Interface;
+﻿using MWL.Services.Interface;
 using MWL.Models;
+using MWL.Models.Validators;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel.Design;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Text;
+using System.Linq;
 
-namespace MWL.Domain.Implementation
+namespace MWL.Services.Implementation
 {
     public class WeekendsLeftService : IWeekendsLeftService
     {
@@ -14,15 +12,12 @@ namespace MWL.Domain.Implementation
         {
             var weekendsLeftResponse = new WeekendsLeftResponse();
 
-            // Validations - TODO: move to seperate area
-            if (weekendsLeftRequest == null)
+            // Validation (using                         
+            var validator = new WeekendsLeftRequestValidator();
+            var results = validator.Validate(weekendsLeftRequest);
+            if (!results.IsValid)
             {
-                weekendsLeftResponse.Summary = "Cannot sumbit a blank request";
-                return weekendsLeftResponse;
-            }
-            if (weekendsLeftRequest.Age < 0)
-            {
-                weekendsLeftResponse.Summary = "Cannot sumbit an negative age";
+                weekendsLeftResponse.Errors = results.Errors.Select(errors => errors.ErrorMessage).ToList();
                 return weekendsLeftResponse;
             }
 
@@ -35,7 +30,7 @@ namespace MWL.Domain.Implementation
             weekendsLeftResponse.EstimatedDayOfDeath = estimatedDayOfDeath;
             weekendsLeftResponse.EstimatedAgeOfDeath = estimatedAgeOfDeath;
             weekendsLeftResponse.EstimatedWeekendsLeft = estimatedWeekendsLeft;
-            weekendsLeftResponse.Summary = $"You have an estiamted {estimatedWeekendsLeft} weekends left in your life, get out there and enjoy it!";
+            weekendsLeftResponse.Message = $"You have an estimated {estimatedWeekendsLeft} weekends left in your life, get out there and enjoy it!";
             
             return weekendsLeftResponse;
         }
