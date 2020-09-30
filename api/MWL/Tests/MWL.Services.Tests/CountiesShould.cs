@@ -19,7 +19,7 @@ namespace MWL.Services.Tests
             var countries = countriesService.GetCountryData();
 
             // Assert
-            Assert.Contains(countries, c => c.Contains("New Zealand") );
+            Assert.Contains(countries, c => c.Value.Contains("New Zealand") );
         }
 
         [Fact]

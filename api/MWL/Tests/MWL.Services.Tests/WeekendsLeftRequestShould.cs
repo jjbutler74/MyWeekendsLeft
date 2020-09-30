@@ -1,5 +1,6 @@
 using MWL.Services.Implementation;
 using MWL.Models;
+using MWL.Models.Entities;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -23,7 +24,9 @@ namespace MWL.Services.Tests
 
             var weekendsLeftRequest = new WeekendsLeftRequest
             {
-                Age = 45
+                Age = 45,
+                Gender = Gender.Female,
+                Country = "USA"
             };
 
             // Act
@@ -60,7 +63,9 @@ namespace MWL.Services.Tests
 
             var weekendsLeftRequest = new WeekendsLeftRequest
             {
-                Age = 45
+                Age = 55,
+                Gender = Gender.Male,
+                Country = "NZL"
             };
 
             // Act

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace MWL.Models.Entities
 {
-    public class CountryFromFile
+    public class CountryCsvFormat
     {
         public string GMI_CNTRY { get; set; }
         public string POPIO_NAME { get; set; }

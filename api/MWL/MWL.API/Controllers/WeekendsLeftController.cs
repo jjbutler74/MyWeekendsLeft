@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using MWL.Services.Interface;
 using MWL.Models;
+using MWL.Models.Entities;
 
 namespace MWL.API.Controllers
 {
@@ -19,11 +21,14 @@ namespace MWL.API.Controllers
         }
         
         [HttpGet]
-        public WeekendsLeftResponse Get([FromQuery] int age)
+        public WeekendsLeftResponse Get([FromQuery] int age, string gender, string country)
         {
+            Enum.TryParse(gender,true, out Gender gen);
             var weekendsLeftRequest = new WeekendsLeftRequest
             {
-                Age = age
+                Age = age,
+                Gender = gen,
+                Country = country
             };
 
             var weekendsLeftResponse = _weekendsLeftService.GetWeekendsLeft(weekendsLeftRequest);

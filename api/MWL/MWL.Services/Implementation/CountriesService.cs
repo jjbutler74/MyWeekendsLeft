@@ -20,17 +20,22 @@ namespace MWL.Services.Implementation
             _cache = memoryCache;
         }
 
-        public IList<string> GetCountryData()
+        public Dictionary<string, string> GetCountryData()
         {
             // Look for CountryData key
-            if (!_cache.TryGetValue("CountryData", out List<string> countries))
+            if (!_cache.TryGetValue("CountryData", out Dictionary<string, string> countries))
             {
                 // Key not in cache, so get data
                 using var reader = new StreamReader("countries.csv"); // From https://population.io/data/countries.csv
                 using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
-                var csvRecords = csv.GetRecords<CountryFromFile>().ToList();
-                countries = csvRecords.Select(csvRecord => csvRecord.POPIO_NAME).ToList();
-
+                var csvRecords = csv.GetRecords<CountryCsvFormat>().ToList();
+                
+                countries = new Dictionary<string, string>();
+                foreach (var csvRecord in csvRecords)
+                { 
+                    countries.Add(csvRecord.GMI_CNTRY, csvRecord.POPIO_NAME);
+                }
+              
                 // Set cache options AND keep in cache for this time, reset time if accessed
                 var cacheOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromDays(1));
 
