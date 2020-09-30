@@ -5,17 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Program.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Remove="countries.csv" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="Program.cs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
   <ItemGroup>
@@ -26,6 +16,12 @@
     <Resource Include="countries.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Program.cs">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Compile>
   </ItemGroup>
 
 
