@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Caching.Memory;
 using MWL.Services.Implementation;
 using MWL.Models;
 using MWL.Models.Entities;
@@ -20,7 +21,9 @@ namespace MWL.Services.Tests
         public void HaveEstimatedAgeOfDeathInRange()
         {
             // Arrange
-            var weekendsLeftService = new WeekendsLeftService(); // Not using DI on this now
+            var cache = new MemoryCache(new MemoryCacheOptions());
+            var countriesService = new CountriesService(cache);
+            var weekendsLeftService = new WeekendsLeftService(countriesService);
 
             var weekendsLeftRequest = new WeekendsLeftRequest
             {
@@ -41,7 +44,9 @@ namespace MWL.Services.Tests
         public void NotAllowNegativeAges()
         {
             // Arrange
-            var weekendsLeftService = new WeekendsLeftService();
+            var cache = new MemoryCache(new MemoryCacheOptions());
+            var countriesService = new CountriesService(cache);
+            var weekendsLeftService = new WeekendsLeftService(countriesService);
 
             var weekendsLeftRequest = new WeekendsLeftRequest
             {
@@ -59,7 +64,9 @@ namespace MWL.Services.Tests
         public void HaveCorrectSummaryText()
         {
             // Arrange
-            var weekendsLeftService = new WeekendsLeftService();
+            var cache = new MemoryCache(new MemoryCacheOptions());
+            var countriesService = new CountriesService(cache);
+            var weekendsLeftService = new WeekendsLeftService(countriesService);
 
             var weekendsLeftRequest = new WeekendsLeftRequest
             {

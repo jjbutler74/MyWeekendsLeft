@@ -23,7 +23,8 @@ namespace MWL.API
         {
             services.AddControllers();
             services.AddScoped<IWeekendsLeftService, WeekendsLeftService>();
-          //  services.AddSingleton<IMemoryCache>();
+            services.AddScoped<ICountriesService, CountriesService>();
+            services.AddMemoryCache();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
