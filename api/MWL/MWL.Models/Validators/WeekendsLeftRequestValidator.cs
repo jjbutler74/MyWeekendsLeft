@@ -1,4 +1,6 @@
-﻿using FluentValidation;
+﻿using System.Collections.Generic;
+using FluentValidation;
+using MWL.Models.Entities;
 
 namespace MWL.Models.Validators
 {
@@ -6,8 +8,12 @@ namespace MWL.Models.Validators
     {
         public WeekendsLeftRequestValidator()
         {
-            RuleFor(wlr => wlr.Age).NotEmpty()
-                                                           .InclusiveBetween(1, 120);
+            RuleFor(wlr => wlr.Age).InclusiveBetween(1, 120);
+
+            RuleFor(wlr => wlr.Gender).IsInEnum()
+                .NotEqual(Gender.Unknown);
+
+            RuleFor(wlr => wlr.Country).NotEmpty().Length(3);
         }
     }
 }

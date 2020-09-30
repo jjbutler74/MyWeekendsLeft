@@ -3,6 +3,7 @@ using MWL.Models;
 using MWL.Models.Validators;
 using System;
 using System.Linq;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace MWL.Services.Implementation
 {
@@ -12,12 +13,22 @@ namespace MWL.Services.Implementation
         {
             var weekendsLeftResponse = new WeekendsLeftResponse();
 
-            // Validation (using                         
+            // Model Validation                         
             var validator = new WeekendsLeftRequestValidator();
             var results = validator.Validate(weekendsLeftRequest);
             if (!results.IsValid)
             {
                 weekendsLeftResponse.Errors = results.Errors.Select(errors => errors.ErrorMessage).ToList();
+                weekendsLeftResponse.Message = "Errors in request, please correct and resubmit";
+                return weekendsLeftResponse;
+            }
+
+            // County Code Validation - jjb
+            var cache = new MemoryCache(new MemoryCacheOptions()); // NEED TO DELETE
+            var countriesService = new CountriesService(cache);
+            if (!countriesService.GetCountryData().ContainsKey(weekendsLeftRequest.Country))
+            {
+                weekendsLeftResponse.Errors = new[] {"Country Code is not valid"};
                 weekendsLeftResponse.Message = "Errors in request, please correct and resubmit";
                 return weekendsLeftResponse;
             }
