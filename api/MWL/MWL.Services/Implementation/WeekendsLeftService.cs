@@ -18,6 +18,7 @@ namespace MWL.Services.Implementation
             if (!results.IsValid)
             {
                 weekendsLeftResponse.Errors = results.Errors.Select(errors => errors.ErrorMessage).ToList();
+                weekendsLeftResponse.Message = "Errors in request, please correct and resubmit";
                 return weekendsLeftResponse;
             }
 
