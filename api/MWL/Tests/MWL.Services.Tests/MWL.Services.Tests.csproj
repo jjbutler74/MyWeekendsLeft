@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\MWL.Domain\MWL.Services.csproj" />
+    <ProjectReference Include="..\..\MWL.Services\MWL.Services.csproj" />
   </ItemGroup>
 
 </Project>

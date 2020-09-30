@@ -1,12 +1,19 @@
 using MWL.Services.Implementation;
 using MWL.Models;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace MWL.Services.Tests
 {
-    public class WeekendsLeftRequestShould 
+    public class WeekendsLeftRequestShould
     {
+        private readonly ITestOutputHelper _output;
         static readonly int MAXAGE = 120;
+
+        public WeekendsLeftRequestShould(ITestOutputHelper output)
+        {
+            _output = output;
+        }
 
         [Fact]
         public void HaveEstimatedAgeOfDeathInRange()
@@ -24,6 +31,7 @@ namespace MWL.Services.Tests
 
             // Assert
             Assert.InRange(weekendsLeftResponse.EstimatedAgeOfDeath, weekendsLeftRequest.Age, MAXAGE);
+            _output.WriteLine("HaveEstimatedAgeOfDeathInRange was tested");
         }
 
         [Fact]
