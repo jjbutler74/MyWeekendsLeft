@@ -44,7 +44,7 @@ namespace MWL.Services.Implementation
             }
 
             // Life Expectancy Lookup
-            var remainingLifeExpectancy = await _lifeExpectancyService.GetRemainingLifeExpectancy(weekendsLeftRequest);
+            var remainingLifeExpectancy = await _lifeExpectancyService.GetRemainingLifeExpectancyAsync(weekendsLeftRequest);
 
             // Life Expectancy Calculations
             weekendsLeftResponse = _lifeExpectancyService.LifeExpectancyCalculations(weekendsLeftRequest.Age, remainingLifeExpectancy);
