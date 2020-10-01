@@ -8,6 +8,7 @@ namespace MWL.Services.Interface
 {
     public interface ILifeExpectancyService
     {
-        Task<int> GetWeekendsLifeExpectancy(WeekendsLeftRequest weekendsLeftRequest);
+        Task<double> GetRemainingLifeExpectancy(WeekendsLeftRequest weekendsLeftRequest);
+        WeekendsLeftResponse LifeExpectancyCalculations(int age, double remainingLifeExpectancy);
     }
 }

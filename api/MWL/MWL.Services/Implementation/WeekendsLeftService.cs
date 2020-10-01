@@ -43,24 +43,12 @@ namespace MWL.Services.Implementation
                 return weekendsLeftResponse;
             }
 
-            // Life Expectancy Lookup - MADE UP FOR NOW
+            // Life Expectancy Lookup
+            var remainingLifeExpectancy = await _lifeExpectancyService.GetRemainingLifeExpectancy(weekendsLeftRequest);
 
-            var jjb = await _lifeExpectancyService.GetWeekendsLifeExpectancy(weekendsLeftRequest);
+            // Life Expectancy Calculations
+            weekendsLeftResponse = _lifeExpectancyService.LifeExpectancyCalculations(weekendsLeftRequest.Age, remainingLifeExpectancy);
 
-
-
-            var rng = new Random();
-            var estimatedDayOfDeath = DateTime.Now.AddDays(rng.Next(100, 20000));
-            var estimatedDaysLeft = (estimatedDayOfDeath - DateTime.Now).Days;
-            var estimatedAgeOfDeath = weekendsLeftRequest.Age + (estimatedDaysLeft / 365);
-            //var estimatedWeekendsLeft = estimatedDaysLeft / 7;
-            var estimatedWeekendsLeft = jjb;
-
-            weekendsLeftResponse.EstimatedDayOfDeath = estimatedDayOfDeath;
-            weekendsLeftResponse.EstimatedAgeOfDeath = estimatedAgeOfDeath;
-            weekendsLeftResponse.EstimatedWeekendsLeft = estimatedWeekendsLeft;
-            weekendsLeftResponse.Message = $"You have an estimated {estimatedWeekendsLeft} weekends left in your life, get out there and enjoy it!";
-            
             return weekendsLeftResponse;
         }
     }
