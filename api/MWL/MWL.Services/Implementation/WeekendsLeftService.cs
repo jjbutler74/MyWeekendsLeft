@@ -4,6 +4,8 @@ using MWL.Models.Validators;
 using System;
 using System.ComponentModel;
 using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace MWL.Services.Implementation
@@ -11,13 +13,15 @@ namespace MWL.Services.Implementation
     public class WeekendsLeftService : IWeekendsLeftService
     {
         private ICountriesService _countriesService;
+        private ILifeExpectancyService _lifeExpectancyService;
 
-        public WeekendsLeftService(ICountriesService countriesService)
+        public WeekendsLeftService(ICountriesService countriesService, ILifeExpectancyService lifeExpectancyService)
         {
             _countriesService = countriesService;
+            _lifeExpectancyService = lifeExpectancyService;
         }
 
-        public WeekendsLeftResponse GetWeekendsLeft(WeekendsLeftRequest weekendsLeftRequest)
+        public async Task<WeekendsLeftResponse> GetWeekendsLeftAsync(WeekendsLeftRequest weekendsLeftRequest)
         {
             var weekendsLeftResponse = new WeekendsLeftResponse();
 
@@ -39,11 +43,18 @@ namespace MWL.Services.Implementation
                 return weekendsLeftResponse;
             }
 
+            // Life Expectancy Lookup - MADE UP FOR NOW
+
+            var jjb = await _lifeExpectancyService.GetWeekendsLifeExpectancy(weekendsLeftRequest);
+
+
+
             var rng = new Random();
             var estimatedDayOfDeath = DateTime.Now.AddDays(rng.Next(100, 20000));
             var estimatedDaysLeft = (estimatedDayOfDeath - DateTime.Now).Days;
             var estimatedAgeOfDeath = weekendsLeftRequest.Age + (estimatedDaysLeft / 365);
-            var estimatedWeekendsLeft = estimatedDaysLeft / 7;
+            //var estimatedWeekendsLeft = estimatedDaysLeft / 7;
+            var estimatedWeekendsLeft = jjb;
 
             weekendsLeftResponse.EstimatedDayOfDeath = estimatedDayOfDeath;
             weekendsLeftResponse.EstimatedAgeOfDeath = estimatedAgeOfDeath;

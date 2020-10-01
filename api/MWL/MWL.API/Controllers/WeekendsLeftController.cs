@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using MWL.Services.Interface;
@@ -21,7 +22,7 @@ namespace MWL.API.Controllers
         }
         
         [HttpGet]
-        public WeekendsLeftResponse Get([FromQuery] int age, string gender, string country)
+        public async Task<WeekendsLeftResponse> GetAsync([FromQuery] int age, string gender, string country)
         {
             Enum.TryParse(gender,true, out Gender gen);
             var weekendsLeftRequest = new WeekendsLeftRequest
@@ -31,7 +32,7 @@ namespace MWL.API.Controllers
                 Country = country
             };
 
-            var weekendsLeftResponse = _weekendsLeftService.GetWeekendsLeft(weekendsLeftRequest);
+            var weekendsLeftResponse = await _weekendsLeftService.GetWeekendsLeftAsync(weekendsLeftRequest);
             return weekendsLeftResponse;
         }
     }

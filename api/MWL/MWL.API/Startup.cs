@@ -24,6 +24,7 @@ namespace MWL.API
             services.AddControllers();
             services.AddScoped<IWeekendsLeftService, WeekendsLeftService>();
             services.AddScoped<ICountriesService, CountriesService>();
+            services.AddScoped<ILifeExpectancyService, LifeExpectancyService>();
             services.AddMemoryCache();
         }
 

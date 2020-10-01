@@ -2,6 +2,7 @@ using Microsoft.Extensions.Caching.Memory;
 using MWL.Services.Implementation;
 using MWL.Models;
 using MWL.Models.Entities;
+using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -18,12 +19,13 @@ namespace MWL.Services.Tests
         }
 
         [Fact]
-        public void HaveEstimatedAgeOfDeathInRange()
+        public async Task HaveEstimatedAgeOfDeathInRangeAsync()
         {
             // Arrange
             var cache = new MemoryCache(new MemoryCacheOptions());
             var countriesService = new CountriesService(cache);
-            var weekendsLeftService = new WeekendsLeftService(countriesService);
+            var lifeExpectancyService = new LifeExpectancyService();
+            var weekendsLeftService = new WeekendsLeftService(countriesService, lifeExpectancyService);
 
             var weekendsLeftRequest = new WeekendsLeftRequest
             {
@@ -33,7 +35,7 @@ namespace MWL.Services.Tests
             };
 
             // Act
-            var weekendsLeftResponse = weekendsLeftService.GetWeekendsLeft(weekendsLeftRequest);
+            var weekendsLeftResponse = await weekendsLeftService.GetWeekendsLeftAsync(weekendsLeftRequest);
 
             // Assert
             Assert.InRange(weekendsLeftResponse.EstimatedAgeOfDeath, weekendsLeftRequest.Age, MAXAGE);
@@ -41,12 +43,13 @@ namespace MWL.Services.Tests
         }
 
         [Fact]
-        public void NotAllowNegativeAges()
+        public async Task NotAllowNegativeAgesAsync()
         {
             // Arrange
             var cache = new MemoryCache(new MemoryCacheOptions());
             var countriesService = new CountriesService(cache);
-            var weekendsLeftService = new WeekendsLeftService(countriesService);
+            var lifeExpectancyService = new LifeExpectancyService();
+            var weekendsLeftService = new WeekendsLeftService(countriesService, lifeExpectancyService);
 
             var weekendsLeftRequest = new WeekendsLeftRequest
             {
@@ -54,19 +57,20 @@ namespace MWL.Services.Tests
             };
 
             // Act
-            var weekendsLeftResponse = weekendsLeftService.GetWeekendsLeft(weekendsLeftRequest);
+            var weekendsLeftResponse = await weekendsLeftService.GetWeekendsLeftAsync(weekendsLeftRequest);
 
             // Assert
             Assert.Contains("'Age' must be between 1 and 120. You entered -5.", weekendsLeftResponse.Errors);
         }
 
         [Fact]
-        public void HaveCorrectSummaryText()
+        public async Task HaveCorrectSummaryTextAsync()
         {
             // Arrange
             var cache = new MemoryCache(new MemoryCacheOptions());
             var countriesService = new CountriesService(cache);
-            var weekendsLeftService = new WeekendsLeftService(countriesService);
+            var lifeExpectancyService = new LifeExpectancyService();
+            var weekendsLeftService = new WeekendsLeftService(countriesService, lifeExpectancyService);
 
             var weekendsLeftRequest = new WeekendsLeftRequest
             {
@@ -76,7 +80,7 @@ namespace MWL.Services.Tests
             };
 
             // Act
-            var weekendsLeftResponse = weekendsLeftService.GetWeekendsLeft(weekendsLeftRequest);
+            var weekendsLeftResponse = await weekendsLeftService.GetWeekendsLeftAsync(weekendsLeftRequest);
 
             // Assert
             Assert.StartsWith("You have an estimated", weekendsLeftResponse.Message);
