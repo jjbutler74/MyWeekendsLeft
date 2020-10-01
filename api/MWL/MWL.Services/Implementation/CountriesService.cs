@@ -8,10 +8,11 @@ using System.Text;
 using CsvHelper;
 using MWL.Models.Entities;
 using Microsoft.Extensions.Caching.Memory;
+using MWL.Services.Interface;
 
 namespace MWL.Services.Implementation
 {
-    public class CountriesService
+    public class CountriesService : ICountriesService
     {
         private IMemoryCache _cache;
 
@@ -26,7 +27,7 @@ namespace MWL.Services.Implementation
             if (!_cache.TryGetValue("CountryData", out Dictionary<string, string> countries))
             {
                 // Key not in cache, so get data
-                using var reader = new StreamReader("countries.csv"); // From https://population.io/data/countries.csv
+                using var reader = new StreamReader("countries.csv"); // TODO: move file to shared location (data from https://population.io/data/countries.csv)
                 using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
                 var csvRecords = csv.GetRecords<CountryCsvFormat>().ToList();
                 

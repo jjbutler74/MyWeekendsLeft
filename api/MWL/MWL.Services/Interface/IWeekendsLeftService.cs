@@ -1,9 +1,10 @@
-﻿using MWL.Models;
+﻿using System.Threading.Tasks;
+using MWL.Models;
 
 namespace MWL.Services.Interface
 {
     public interface IWeekendsLeftService
     {
-        WeekendsLeftResponse GetWeekendsLeft(WeekendsLeftRequest weekendsLeftRequest);
+        Task<WeekendsLeftResponse> GetWeekendsLeftAsync(WeekendsLeftRequest weekendsLeftRequest);
     }
 }
