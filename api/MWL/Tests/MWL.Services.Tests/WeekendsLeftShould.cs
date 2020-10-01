@@ -11,26 +11,14 @@ using Xunit.Abstractions;
 
 namespace MWL.Services.Tests
 {
-    public class WeekendsLeftRequestShould
+    public class WeekendsLeftShould
     {
         private readonly ITestOutputHelper _output;
         static readonly int MAXAGE = 120;
 
-        public WeekendsLeftRequestShould(ITestOutputHelper output)
+        public WeekendsLeftShould(ITestOutputHelper output)
         {
             _output = output;
-        }
-
-        private static IConfigurationRoot ConfigurationRoot()
-        {
-            var appConfig = new Dictionary<string, string>
-            {
-                {"MwlConfiguration:LifeExpectancyApiUri", "https://d6wn6bmjj722w.population.io/1.0/life-expectancy/remaining"}
-            };
-            var configuration = new ConfigurationBuilder()
-                .AddInMemoryCollection(appConfig)
-                .Build();
-            return configuration;
         }
 
         [Fact]
@@ -39,7 +27,7 @@ namespace MWL.Services.Tests
             // Arrange
             var cache = new MemoryCache(new MemoryCacheOptions());
             var countriesService = new CountriesService(cache);
-            var configuration = ConfigurationRoot();
+            var configuration = TestUtilities.ConfigurationRoot();
             var lifeExpectancyService = new LifeExpectancyService(configuration, countriesService);
             var weekendsLeftService = new WeekendsLeftService(countriesService, lifeExpectancyService);
 
@@ -64,7 +52,7 @@ namespace MWL.Services.Tests
             // Arrange
             var cache = new MemoryCache(new MemoryCacheOptions());
             var countriesService = new CountriesService(cache);
-            var configuration = ConfigurationRoot();
+            var configuration = TestUtilities.ConfigurationRoot();
             var lifeExpectancyService = new LifeExpectancyService(configuration, countriesService);
             var weekendsLeftService = new WeekendsLeftService(countriesService, lifeExpectancyService);
 
@@ -86,7 +74,7 @@ namespace MWL.Services.Tests
             // Arrange
             var cache = new MemoryCache(new MemoryCacheOptions());
             var countriesService = new CountriesService(cache);
-            var configuration = ConfigurationRoot();
+            var configuration = TestUtilities.ConfigurationRoot();
             var lifeExpectancyService = new LifeExpectancyService(configuration, countriesService);
             var weekendsLeftService = new WeekendsLeftService(countriesService, lifeExpectancyService);
 

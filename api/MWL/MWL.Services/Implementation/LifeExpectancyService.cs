@@ -23,7 +23,7 @@ namespace MWL.Services.Implementation
             _countriesService = countriesService;
         }
 
-        public async Task<double> GetRemainingLifeExpectancy(WeekendsLeftRequest weekendsLeftRequest)
+        public async Task<double> GetRemainingLifeExpectancyAsync(WeekendsLeftRequest weekendsLeftRequest)
         {
             // Build Url
             var uri = _config.GetValue<string>("MwlConfiguration:LifeExpectancyApiUri");
