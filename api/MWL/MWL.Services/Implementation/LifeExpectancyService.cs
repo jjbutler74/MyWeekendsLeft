@@ -3,18 +3,39 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using MWL.Models;
+using MWL.Models.Entities;
 using MWL.Services.Interface;
 
 namespace MWL.Services.Implementation
 {
     public class LifeExpectancyService : ILifeExpectancyService
     {
+        private readonly IConfiguration _config;
+        private readonly ICountriesService _countriesService;
         private static readonly HttpClient client = new HttpClient();
+
+        public LifeExpectancyService(IConfiguration config, ICountriesService countriesService)
+        {
+            _config = config;
+            _countriesService = countriesService;
+        }
 
         public async Task<double> GetRemainingLifeExpectancy(WeekendsLeftRequest weekendsLeftRequest)
         {
-            var response = await client.GetStringAsync("https://d6wn6bmjj722w.population.io/1.0/life-expectancy/remaining/female/New%20Zealand/2020-09-30/45y9m/");
+            // Build Url
+            var uri = _config.GetValue<string>("MwlConfiguration:LifeExpectancyApiUri");
+            var formatGender = weekendsLeftRequest.Gender.ToString().ToLower();
+            var countryData = _countriesService.GetCountryData();
+            var formatCountry = Uri.EscapeDataString(countryData[weekendsLeftRequest.Country.ToUpper()]); 
+            var formatDate = DateTime.Now.ToString("yyyy-MM-dd"); 
+            var formatAge = weekendsLeftRequest.Age;
+            var fullUrl = $"{uri}/{formatGender}/{formatCountry}/{formatDate}/{formatAge}y/";
+
+            var response = await client.GetStringAsync(fullUrl);
+            
             var responseDeserialize = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(response);
             return responseDeserialize.remaining_life_expectancy;
         }

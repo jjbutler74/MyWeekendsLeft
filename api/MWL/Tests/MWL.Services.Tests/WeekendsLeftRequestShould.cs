@@ -1,8 +1,11 @@
+using System.Collections.Generic;
 using Microsoft.Extensions.Caching.Memory;
 using MWL.Services.Implementation;
 using MWL.Models;
 using MWL.Models.Entities;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -18,13 +21,26 @@ namespace MWL.Services.Tests
             _output = output;
         }
 
+        private static IConfigurationRoot ConfigurationRoot()
+        {
+            var appConfig = new Dictionary<string, string>
+            {
+                {"MwlConfiguration:LifeExpectancyApiUri", "https://d6wn6bmjj722w.population.io/1.0/life-expectancy/remaining"}
+            };
+            var configuration = new ConfigurationBuilder()
+                .AddInMemoryCollection(appConfig)
+                .Build();
+            return configuration;
+        }
+
         [Fact]
         public async Task HaveEstimatedAgeOfDeathInRangeAsync()
         {
             // Arrange
             var cache = new MemoryCache(new MemoryCacheOptions());
             var countriesService = new CountriesService(cache);
-            var lifeExpectancyService = new LifeExpectancyService();
+            var configuration = ConfigurationRoot();
+            var lifeExpectancyService = new LifeExpectancyService(configuration, countriesService);
             var weekendsLeftService = new WeekendsLeftService(countriesService, lifeExpectancyService);
 
             var weekendsLeftRequest = new WeekendsLeftRequest
@@ -48,7 +64,8 @@ namespace MWL.Services.Tests
             // Arrange
             var cache = new MemoryCache(new MemoryCacheOptions());
             var countriesService = new CountriesService(cache);
-            var lifeExpectancyService = new LifeExpectancyService();
+            var configuration = ConfigurationRoot();
+            var lifeExpectancyService = new LifeExpectancyService(configuration, countriesService);
             var weekendsLeftService = new WeekendsLeftService(countriesService, lifeExpectancyService);
 
             var weekendsLeftRequest = new WeekendsLeftRequest
@@ -69,7 +86,8 @@ namespace MWL.Services.Tests
             // Arrange
             var cache = new MemoryCache(new MemoryCacheOptions());
             var countriesService = new CountriesService(cache);
-            var lifeExpectancyService = new LifeExpectancyService();
+            var configuration = ConfigurationRoot();
+            var lifeExpectancyService = new LifeExpectancyService(configuration, countriesService);
             var weekendsLeftService = new WeekendsLeftService(countriesService, lifeExpectancyService);
 
             var weekendsLeftRequest = new WeekendsLeftRequest
