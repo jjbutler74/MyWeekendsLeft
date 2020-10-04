@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net.Mime;
-using System.Text;
+using System.Reflection;
 using CsvHelper;
 using MWL.Models.Entities;
 using Microsoft.Extensions.Caching.Memory;
@@ -27,7 +26,13 @@ namespace MWL.Services.Implementation
             if (!_cache.TryGetValue("CountryData", out Dictionary<string, string> countries))
             {
                 // Key not in cache, so get data
-                using var reader = new StreamReader("countries.csv"); // TODO: move file to shared location (data from https://population.io/data/countries.csv)
+                var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("MWL.Services.countries.csv");
+                if (stream == null)
+                {
+                    // TODO: log this error
+                    throw new NullReferenceException("'stream' object is null.");
+                }
+                using var reader = new StreamReader(stream); // data from https://population.io/data/countries.csv)
                 using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
                 var csvRecords = csv.GetRecords<CountryCsvFormat>().ToList();
                 

@@ -1,14 +1,20 @@
 ﻿using System.Linq;
 using Microsoft.Extensions.Caching.Memory;
+using Moq;
 using MWL.Models.Entities;
 using MWL.Services.Implementation;
+using MWL.Services.Interface;
 using Xunit;
 
 namespace MWL.Services.Tests
 {
     public class CountiesShould
     {
+        // Tests depends on IO to embedded file - JS says it's ok
+        // https://stackoverflow.com/questions/52186343/is-reading-csv-file-from-physical-path-is-valid-scenario-in-unit-test-case-why/52186784
+
         [Fact]
+        [Trait("Category", "Integration")]
         public void ContainNewZealand()
         {
             // Arrange
@@ -23,6 +29,7 @@ namespace MWL.Services.Tests
         }
 
         [Fact]
+        [Trait("Category", "Integration")]
         public void HaveReasonableCount()
         {
             // Arrange

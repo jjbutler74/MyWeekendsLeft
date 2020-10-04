@@ -5,17 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="countries.csv" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\MWL.Services\MWL.Services.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Resource Include="countries.csv">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
   </ItemGroup>
 
   <ItemGroup>
@@ -23,6 +13,5 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Compile>
   </ItemGroup>
-
 
 </Project>

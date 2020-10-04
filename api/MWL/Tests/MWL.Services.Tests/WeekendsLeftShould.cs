@@ -1,11 +1,8 @@
-using System.Collections.Generic;
 using Microsoft.Extensions.Caching.Memory;
 using MWL.Services.Implementation;
 using MWL.Models;
 using MWL.Models.Entities;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -13,23 +10,25 @@ namespace MWL.Services.Tests
 {
     public class WeekendsLeftShould
     {
+        private WeekendsLeftService weekendsLeftService;
         private readonly ITestOutputHelper _output;
         static readonly int MAXAGE = 120;
 
         public WeekendsLeftShould(ITestOutputHelper output)
         {
+            var cache = new MemoryCache(new MemoryCacheOptions());
+            var countriesService = new CountriesService(cache);
+            var configuration = TestUtilities.ConfigurationRoot();
+            var lifeExpectancyService = new LifeExpectancyService(configuration, countriesService);
+            weekendsLeftService = new WeekendsLeftService(countriesService, lifeExpectancyService);
+
             _output = output;
         }
 
         [Fact]
         public async Task HaveEstimatedAgeOfDeathInRangeAsync()
         {
-            // Arrange
-            var cache = new MemoryCache(new MemoryCacheOptions());
-            var countriesService = new CountriesService(cache);
-            var configuration = TestUtilities.ConfigurationRoot();
-            var lifeExpectancyService = new LifeExpectancyService(configuration, countriesService);
-            var weekendsLeftService = new WeekendsLeftService(countriesService, lifeExpectancyService);
+            // Arrange - done in constructor 
 
             var weekendsLeftRequest = new WeekendsLeftRequest
             {
@@ -49,12 +48,7 @@ namespace MWL.Services.Tests
         [Fact]
         public async Task NotAllowNegativeAgesAsync()
         {
-            // Arrange
-            var cache = new MemoryCache(new MemoryCacheOptions());
-            var countriesService = new CountriesService(cache);
-            var configuration = TestUtilities.ConfigurationRoot();
-            var lifeExpectancyService = new LifeExpectancyService(configuration, countriesService);
-            var weekendsLeftService = new WeekendsLeftService(countriesService, lifeExpectancyService);
+            // Arrange - done in constructor 
 
             var weekendsLeftRequest = new WeekendsLeftRequest
             {
@@ -71,12 +65,7 @@ namespace MWL.Services.Tests
         [Fact]
         public async Task HaveCorrectSummaryTextAsync()
         {
-            // Arrange
-            var cache = new MemoryCache(new MemoryCacheOptions());
-            var countriesService = new CountriesService(cache);
-            var configuration = TestUtilities.ConfigurationRoot();
-            var lifeExpectancyService = new LifeExpectancyService(configuration, countriesService);
-            var weekendsLeftService = new WeekendsLeftService(countriesService, lifeExpectancyService);
+            // Arrange - done in constructor 
 
             var weekendsLeftRequest = new WeekendsLeftRequest
             {
