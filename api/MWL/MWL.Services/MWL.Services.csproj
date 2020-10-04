@@ -5,18 +5,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="countries.csv" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="countries.csv" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="CsvHelper" Version="15.0.6" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\MWL.Models\MWL.Models.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="countries.csv">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
 </Project>
