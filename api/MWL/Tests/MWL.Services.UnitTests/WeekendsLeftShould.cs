@@ -1,18 +1,15 @@
 using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.Caching.Memory;
-using MWL.Services.Implementation;
+using System.Threading.Tasks;
+using Moq;
 using MWL.Models;
 using MWL.Models.Entities;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
-using Microsoft.VisualBasic;
-using Moq;
+using MWL.Services.Implementation;
 using MWL.Services.Interface;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace MWL.Services.Tests
+namespace MWL.Services.UnitTests
 {
     public class WeekendsLeftShould
     {

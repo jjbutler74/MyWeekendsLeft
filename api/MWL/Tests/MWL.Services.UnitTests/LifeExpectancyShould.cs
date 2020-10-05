@@ -1,13 +1,10 @@
-﻿using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Moq;
-using MWL.Models;
-using MWL.Models.Entities;
 using MWL.Services.Implementation;
 using MWL.Services.Interface;
 using Xunit;
 
-namespace MWL.Services.Tests
+namespace MWL.Services.UnitTests
 {
     public class LifeExpectancyShould
     {
