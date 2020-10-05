@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 
-namespace MWL.Services.Tests
+namespace MWL.Services.IntegrationTests.Shared
 {
     public class TestUtilities
     {
