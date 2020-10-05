@@ -2,7 +2,7 @@
 using MWL.Models;
 using MWL.Models.Entities;
 using MWL.Services.Implementation;
-using MWL.Services.Tests;
+using MWL.Services.IntegrationTests.Shared;
 using Xunit;
 
 namespace MWL.Services.IntegrationTests

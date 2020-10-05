@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 
-namespace MWL.Services.Tests
+namespace MWL.Services.IntegrationTests.Shared
 {
     public class TestUtilities
     {

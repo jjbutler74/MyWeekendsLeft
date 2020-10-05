@@ -20,17 +20,21 @@ namespace MWL.Services.Tests
             lifeExpectancyService = new LifeExpectancyService(mockConfiguration.Object, mockCountriesService.Object); // Moq
         }
 
-        [Fact]
+        [Theory]
         [Trait("Category", "Unit")]
-        public void HaveEstimatedAgeOfDeath65()
+        [InlineData(45, 20, 65)]
+        [InlineData(45, 30, 75)]
+        [InlineData(33, 33, 66)]
+        [InlineData(80, 0, 80)]
+        public void HaveEstimatedAgeOfDeath(int age, double remainingLifeExpectancyYears, int estimatedAgeOfDeath)
         {
             // Arrange - done in constructor 
 
             // Act
-            var weekendsLeftResponse = lifeExpectancyService.LifeExpectancyCalculations(45, 20);
+            var weekendsLeftResponse = lifeExpectancyService.LifeExpectancyCalculations(age, remainingLifeExpectancyYears);
 
             // Assert
-            Assert.Equal(65, weekendsLeftResponse.EstimatedAgeOfDeath);
+            Assert.Equal(estimatedAgeOfDeath, weekendsLeftResponse.EstimatedAgeOfDeath);
         }
 
         [Fact]
