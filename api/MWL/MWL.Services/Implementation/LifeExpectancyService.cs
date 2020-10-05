@@ -23,7 +23,7 @@ namespace MWL.Services.Implementation
             _countriesService = countriesService;
         }
 
-        public async Task<double> GetRemainingLifeExpectancyAsync(WeekendsLeftRequest weekendsLeftRequest)
+        public async Task<double> GetRemainingLifeExpectancyYearsAsync(WeekendsLeftRequest weekendsLeftRequest)
         {
             // Build Url
             var uri = _config.GetValue<string>("MwlConfiguration:LifeExpectancyApiUri");
@@ -40,12 +40,12 @@ namespace MWL.Services.Implementation
             return responseDeserialize.remaining_life_expectancy;
         }
 
-        public WeekendsLeftResponse LifeExpectancyCalculations(int age, double remainingLifeExpectancy)
+        public WeekendsLeftResponse LifeExpectancyCalculations(int age, double remainingLifeExpectancyYears)
         {
             var weekendsLeftResponse = new WeekendsLeftResponse();
 
-            var estimatedAgeOfDeath = (int)(age + remainingLifeExpectancy);
-            var estimatedDaysLeft = (int)(remainingLifeExpectancy * 365);
+            var estimatedAgeOfDeath = (int)(age + remainingLifeExpectancyYears);
+            var estimatedDaysLeft = (int)(remainingLifeExpectancyYears * 365);
             var estimatedDayOfDeath = DateTime.Now.AddDays(estimatedDaysLeft);
             var estimatedWeekendsLeft = estimatedDaysLeft / 7;
             

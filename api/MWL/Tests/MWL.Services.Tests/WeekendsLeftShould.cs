@@ -1,8 +1,14 @@
+using System;
+using System.Collections.Generic;
 using Microsoft.Extensions.Caching.Memory;
 using MWL.Services.Implementation;
 using MWL.Models;
 using MWL.Models.Entities;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Microsoft.VisualBasic;
+using Moq;
+using MWL.Services.Interface;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -16,16 +22,33 @@ namespace MWL.Services.Tests
 
         public WeekendsLeftShould(ITestOutputHelper output)
         {
-            var cache = new MemoryCache(new MemoryCacheOptions());
-            var countriesService = new CountriesService(cache);
-            var configuration = TestUtilities.ConfigurationRoot();
-            var lifeExpectancyService = new LifeExpectancyService(configuration, countriesService);
-            weekendsLeftService = new WeekendsLeftService(countriesService, lifeExpectancyService);
+            var mockCountriesService = new Mock<ICountriesService>(); // Moq
+            var mockDict = new Dictionary<string, string>()
+            {
+                {"USA","United States"},
+                {"NZL", "New Zealand"}
+            };
+            mockCountriesService.Setup(x => x.GetCountryData()).Returns(mockDict);
+            
+            var mockLifeExpectancyService = new Mock<ILifeExpectancyService>(); // Moq
+            var wlr = new WeekendsLeftResponse
+            {
+                EstimatedWeekendsLeft = 1623,
+                EstimatedAgeOfDeath = 86,
+                EstimatedDayOfDeath = new DateTime(2051, 11, 13, 02, 48, 17),
+                Message = "You have an estimated 1623 weekends left in your life, get out there and enjoy it!",
+                Errors = null
+            };
+            mockLifeExpectancyService.Setup(x => x.LifeExpectancyCalculations(Moq.It.IsAny<int>(),Moq.It.IsAny<double>())).Returns(wlr);
+            mockLifeExpectancyService.Setup(x => x.GetRemainingLifeExpectancyYearsAsync(It.IsAny<WeekendsLeftRequest>())).ReturnsAsync(34.8);
+            
+            weekendsLeftService = new WeekendsLeftService(mockCountriesService.Object, mockLifeExpectancyService.Object);
 
             _output = output;
         }
 
         [Fact]
+        [Trait("Category", "Unit")]
         public async Task HaveEstimatedAgeOfDeathInRangeAsync()
         {
             // Arrange - done in constructor 
@@ -46,6 +69,7 @@ namespace MWL.Services.Tests
         }
 
         [Fact]
+        [Trait("Category", "Unit")]
         public async Task NotAllowNegativeAgesAsync()
         {
             // Arrange - done in constructor 
@@ -63,6 +87,7 @@ namespace MWL.Services.Tests
         }
 
         [Fact]
+        [Trait("Category", "Unit")]
         public async Task HaveCorrectSummaryTextAsync()
         {
             // Arrange - done in constructor 
