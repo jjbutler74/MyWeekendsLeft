@@ -1,12 +1,8 @@
-﻿using System.Linq;
-using Microsoft.Extensions.Caching.Memory;
-using Moq;
-using MWL.Models.Entities;
+﻿using Microsoft.Extensions.Caching.Memory;
 using MWL.Services.Implementation;
-using MWL.Services.Interface;
 using Xunit;
 
-namespace MWL.Services.Tests
+namespace MWL.Services.IntegrationTests
 {
     public class CountiesShould
     {

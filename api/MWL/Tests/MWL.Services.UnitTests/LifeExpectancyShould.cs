@@ -58,28 +58,5 @@ namespace MWL.Services.Tests
             // Assert
             Assert.Equal("You have an estimated 1564 weekends left in your life, get out there and enjoy it!", weekendsLeftResponse.Message);
         }
-
-        [Fact]
-        [Trait("Category", "Integration")]
-        public void HaveRemainingLifeExpectancyYearsInRange()
-        {
-            var cache = new MemoryCache(new MemoryCacheOptions());
-            var countriesService = new CountriesService(cache);
-            var configuration = TestUtilities.ConfigurationRoot();
-            var lifeExpectancyServiceIntegration =  new LifeExpectancyService(configuration, countriesService);
-
-            var wlr = new WeekendsLeftRequest
-            {
-                Age = 82,
-                Gender = Gender.Male,
-                Country = "USA"
-            };
-            
-            // Act
-            var remainingLifeExpectancyYears = lifeExpectancyServiceIntegration.GetRemainingLifeExpectancyYearsAsync(wlr).Result;
-
-            // Assert
-            Assert.InRange(remainingLifeExpectancyYears, 2, 10); // 7.77 on 5/10/2020
-        }
     }
 }
