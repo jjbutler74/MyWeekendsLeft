@@ -44,10 +44,10 @@ namespace MWL.Services.Implementation
             }
 
             // Life Expectancy Lookup
-            var remainingLifeExpectancy = await _lifeExpectancyService.GetRemainingLifeExpectancyAsync(weekendsLeftRequest);
+            var remainingLifeExpectancyYears = await _lifeExpectancyService.GetRemainingLifeExpectancyYearsAsync(weekendsLeftRequest);
 
             // Life Expectancy Calculations
-            weekendsLeftResponse = _lifeExpectancyService.LifeExpectancyCalculations(weekendsLeftRequest.Age, remainingLifeExpectancy);
+            weekendsLeftResponse = _lifeExpectancyService.LifeExpectancyCalculations(weekendsLeftRequest.Age, remainingLifeExpectancyYears);
 
             return weekendsLeftResponse;
         }
