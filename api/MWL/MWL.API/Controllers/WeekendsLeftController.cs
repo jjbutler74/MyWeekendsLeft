@@ -42,21 +42,8 @@ namespace MWL.API.Controllers
         [Route("version/")]
         public string Version()
         {
-            Assembly assembly = Assembly.GetExecutingAssembly();
-            FileVersionInfo fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
-            string version = fileVersionInfo.ProductVersion;
-
-            string ver2 = "?";
-            var version1 = Assembly.GetExecutingAssembly().GetName().Version;
-            if (version1 is { })
-            {
-                ver2 = version1.ToString();
-            }
-
-            var releaseName = Environment.GetEnvironmentVariable("Release_ReleaseName", EnvironmentVariableTarget.Process);
-            var buildNumber = Environment.GetEnvironmentVariable("Build_BuildNumber", EnvironmentVariableTarget.Process);
-
-            return $"Version: {version} v2: {ver2} rel: {releaseName} bld: {buildNumber}";
+            var ver = _weekendsLeftService.GetVersion();
+            return ver;
         }
     }
 }

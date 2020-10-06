@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using Moq;
 using MWL.Models;
 using MWL.Models.Entities;
@@ -19,6 +20,7 @@ namespace MWL.Services.UnitTests
 
         public WeekendsLeftShould(ITestOutputHelper output)
         {
+            var mockConfiguration = new Mock<IConfiguration>(); // Moq
             var mockCountriesService = new Mock<ICountriesService>(); // Moq
             var mockDict = new Dictionary<string, string>()
             {
@@ -39,7 +41,7 @@ namespace MWL.Services.UnitTests
             mockLifeExpectancyService.Setup(x => x.LifeExpectancyCalculations(Moq.It.IsAny<int>(),Moq.It.IsAny<double>())).Returns(wlr);
             mockLifeExpectancyService.Setup(x => x.GetRemainingLifeExpectancyYearsAsync(It.IsAny<WeekendsLeftRequest>())).ReturnsAsync(34.8);
             
-            weekendsLeftService = new WeekendsLeftService(mockCountriesService.Object, mockLifeExpectancyService.Object);
+            weekendsLeftService = new WeekendsLeftService(mockConfiguration.Object, mockCountriesService.Object, mockLifeExpectancyService.Object);
 
             _output = output;
         }

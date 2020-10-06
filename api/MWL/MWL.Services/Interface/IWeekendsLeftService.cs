@@ -6,5 +6,7 @@ namespace MWL.Services.Interface
     public interface IWeekendsLeftService
     {
         Task<WeekendsLeftResponse> GetWeekendsLeftAsync(WeekendsLeftRequest weekendsLeftRequest);
+
+        string GetVersion();
     }
 }
