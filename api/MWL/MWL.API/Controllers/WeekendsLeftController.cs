@@ -53,7 +53,10 @@ namespace MWL.API.Controllers
                 ver2 = version1.ToString();
             }
 
-            return $"Version {version} v2 {ver2}";
+            var releaseName = Environment.GetEnvironmentVariable("Release_ReleaseName", EnvironmentVariableTarget.Process);
+            var buildNumber = Environment.GetEnvironmentVariable("Build_BuildNumber", EnvironmentVariableTarget.Process);
+
+            return $"Version: {version} v2: {ver2} rel: {releaseName} bld: {buildNumber}";
         }
     }
 }
