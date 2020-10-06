@@ -22,6 +22,8 @@ namespace MWL.API.Controllers
         }
         
         [HttpGet]
+        [ApiVersion("1.0", Deprecated = true)]
+        [Route("")]
         public async Task<WeekendsLeftResponse> GetAsync([FromQuery] int age, string gender, string country)
         {
             Enum.TryParse(gender,true, out Gender gen);
@@ -37,11 +39,28 @@ namespace MWL.API.Controllers
         }
 
         [HttpGet]
+        [ApiVersion("1.0")]
         [Route("version/")]
         public VersionInfo Version()
         {
             var ver = _weekendsLeftService.GetVersion();
             return ver;
+        }
+ 
+        [HttpGet]
+        [ApiVersion("2.0")]
+        [Route("")]
+        public string WeekendsLeftResponse2()
+        {
+            return "no v2 wlr";
+        }
+
+        [HttpGet]
+        [ApiVersion("2.0")]
+        [Route("version/")]
+        public string Version2()
+        {
+            return "no v2 ver";
         }
     }
 }
