@@ -42,7 +42,7 @@ namespace MWL.Services.UnitTests
 
             // Act
             var weekendsLeftResponse = lifeExpectancyService.LifeExpectancyCalculations(45, 29);
-
+            
             // Assert
             Assert.Equal(1512, weekendsLeftResponse.EstimatedWeekendsLeft);
         }

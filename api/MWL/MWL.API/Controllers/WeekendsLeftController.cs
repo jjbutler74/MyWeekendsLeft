@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -34,6 +36,24 @@ namespace MWL.API.Controllers
 
             var weekendsLeftResponse = await _weekendsLeftService.GetWeekendsLeftAsync(weekendsLeftRequest);
             return weekendsLeftResponse;
+        }
+
+        [HttpGet]
+        [Route("version/")]
+        public string Version()
+        {
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            FileVersionInfo fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
+            string version = fileVersionInfo.ProductVersion;
+
+            string ver2 = "?";
+            var version1 = Assembly.GetExecutingAssembly().GetName().Version;
+            if (version1 is { })
+            {
+                ver2 = version1.ToString();
+            }
+
+            return $"Version {version} v2 {ver2}";
         }
     }
 }
