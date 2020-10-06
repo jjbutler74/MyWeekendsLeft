@@ -10,15 +10,18 @@ pool:
   vmImage: 'windows-latest'
 
 variables:
-  solution: '**/*.sln'
-  buildPlatform: 'Any CPU'
-  buildConfiguration: 'Release'
-  major-minor: 0.0 
-  revision: $[ counter(variables['major-minor'],0) ]
-  group: MWL-Variable-Group
-  name: major
-  value: $[variables.major]
-
+- group: MWL-Variable-Group
+- name: solution
+  value: '**/*.sln'
+- name: buildPlatform
+  value: 'Any CPU'
+- name: buildConfiguration
+  value: 'Release'
+- name: major-minor
+  value: 0.0
+- name: revision
+  value: $[ counter(variables['major-minor'],0) ]
+   
 #name: $(Build.DefinitionName)-$(date:yyyyMMdd)$(rev:.r)
 name: $(major).$(major-minor).$(revision)
 
