@@ -20,7 +20,7 @@ variables:
   value: $[variables.major]
 
 #name: $(Build.DefinitionName)-$(date:yyyyMMdd)$(rev:.r)
-name: $major.$(major-minor).$(revision)
+name: $(major).$(major-minor).$(revision)
 
 steps:
 - task: NuGetToolInstaller@1
