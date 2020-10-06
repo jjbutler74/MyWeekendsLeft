@@ -2,14 +2,10 @@
 using MWL.Models;
 using MWL.Models.Validators;
 using System;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
-using System.Net.Http;
-using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
+using MWL.Models.Entities;
 
 namespace MWL.Services.Implementation
 {
@@ -57,29 +53,21 @@ namespace MWL.Services.Implementation
             return weekendsLeftResponse;
         }
 
-        string IWeekendsLeftService.GetVersion()
+        VersionInfo IWeekendsLeftService.GetVersion()
         {
+            var buildNumber = _config.GetValue<string>("BuildNumber");
+            var env = _config.GetValue<string>("Environment");
+            var runtime = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription;
+            var zone = $"{DateTime.Now} {TimeZoneInfo.Local.DisplayName}";
 
-            Assembly assembly = Assembly.GetExecutingAssembly();
-            FileVersionInfo fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
-            string version = fileVersionInfo.ProductVersion;
-
-            string ver2 = "?";
-            var version1 = Assembly.GetExecutingAssembly().GetName().Version;
-            if (version1 is { })
+            var ver = new VersionInfo
             {
-                ver2 = version1.ToString();
-            }
-
-            var releaseName = Environment.GetEnvironmentVariable("Release_ReleaseName", EnvironmentVariableTarget.Process);
-            var buildNumber = Environment.GetEnvironmentVariable("Build_BuildNumber", EnvironmentVariableTarget.Process);
-
-            var x = _config.GetValue<string>("BuildNumber");
-            var y = _config.GetValue<string>("jjb");
-
-            return $"Version: {version} v2: {ver2} rel: {releaseName} bld: {buildNumber} x: {x} y: {y}";
-
-
+                Build = buildNumber,
+                Environment = env,
+                Runtime = runtime,
+                ServerDatetime = zone
+            };
+            return ver;
         }
     }
 }

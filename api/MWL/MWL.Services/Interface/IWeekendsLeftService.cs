@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using MWL.Models;
+using MWL.Models.Entities;
 
 namespace MWL.Services.Interface
 {
@@ -7,6 +8,6 @@ namespace MWL.Services.Interface
     {
         Task<WeekendsLeftResponse> GetWeekendsLeftAsync(WeekendsLeftRequest weekendsLeftRequest);
 
-        string GetVersion();
+        VersionInfo GetVersion();
     }
 }
