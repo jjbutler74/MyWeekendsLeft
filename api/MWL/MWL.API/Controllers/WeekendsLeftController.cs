@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -40,7 +38,7 @@ namespace MWL.API.Controllers
 
         [HttpGet]
         [Route("version/")]
-        public string Version()
+        public VersionInfo Version()
         {
             var ver = _weekendsLeftService.GetVersion();
             return ver;
