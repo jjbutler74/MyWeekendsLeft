@@ -16,9 +16,11 @@ variables:
   major-minor: 0.0 
   revision: $[ counter(variables['major-minor'],0) ]
   group: MWL-Variable-Group
+  name: major
+  value: $[variables.major]
 
 #name: $(Build.DefinitionName)-$(date:yyyyMMdd)$(rev:.r)
-name: jjb.major.$(major-minor).$(revision)
+name: $major.$(major-minor).$(revision)
 
 steps:
 - task: NuGetToolInstaller@1
