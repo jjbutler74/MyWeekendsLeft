@@ -17,13 +17,10 @@ variables:
   value: 'Any CPU'
 - name: buildConfiguration
   value: 'Release'
-- name: major-minor
-  value: 0.0
 - name: revision
-  value: $[ counter(variables['major-minor'],0) ]
+  value: $[ counter(format('{0}.{1}', variables['minor'], variables['minor']), 0) ]
    
-#name: $(Build.DefinitionName)-$(date:yyyyMMdd)$(rev:.r)
-name: $(major).$(major-minor).$(revision)
+name: $(major).$(minor).$(revision)
 
 steps:
 - task: NuGetToolInstaller@1
