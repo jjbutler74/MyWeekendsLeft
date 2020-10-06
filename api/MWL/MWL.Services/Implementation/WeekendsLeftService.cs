@@ -3,20 +3,25 @@ using MWL.Models;
 using MWL.Models.Validators;
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
 
 namespace MWL.Services.Implementation
 {
     public class WeekendsLeftService : IWeekendsLeftService
     {
+        private readonly IConfiguration _config;
         private ICountriesService _countriesService;
         private ILifeExpectancyService _lifeExpectancyService;
 
-        public WeekendsLeftService(ICountriesService countriesService, ILifeExpectancyService lifeExpectancyService)
+        public WeekendsLeftService(IConfiguration config, ICountriesService countriesService, ILifeExpectancyService lifeExpectancyService)
         {
+            _config = config;
             _countriesService = countriesService;
             _lifeExpectancyService = lifeExpectancyService;
         }
@@ -50,6 +55,31 @@ namespace MWL.Services.Implementation
             weekendsLeftResponse = _lifeExpectancyService.LifeExpectancyCalculations(weekendsLeftRequest.Age, remainingLifeExpectancyYears);
 
             return weekendsLeftResponse;
+        }
+
+        string IWeekendsLeftService.GetVersion()
+        {
+
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            FileVersionInfo fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
+            string version = fileVersionInfo.ProductVersion;
+
+            string ver2 = "?";
+            var version1 = Assembly.GetExecutingAssembly().GetName().Version;
+            if (version1 is { })
+            {
+                ver2 = version1.ToString();
+            }
+
+            var releaseName = Environment.GetEnvironmentVariable("Release_ReleaseName", EnvironmentVariableTarget.Process);
+            var buildNumber = Environment.GetEnvironmentVariable("Build_BuildNumber", EnvironmentVariableTarget.Process);
+
+            var x = _config.GetValue<string>("BuildNumber");
+            var y = _config.GetValue<string>("jjb");
+
+            return $"Version: {version} v2: {ver2} rel: {releaseName} bld: {buildNumber} x: {x} y: {y}";
+
+
         }
     }
 }
