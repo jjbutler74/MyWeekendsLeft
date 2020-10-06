@@ -2,8 +2,9 @@
 # Build and test ASP.NET projects.
 # Add steps that publish symbols, save build artifacts, deploy, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/apps/aspnet/build-aspnet-4
-name: $(Build.DefinitionName)-$(date:yyyyMMdd)$(rev:.r)
+#name: $(Build.DefinitionName)-$(date:yyyyMMdd)$(rev:.r)
 
+container:
 trigger:
 - main
 
@@ -14,6 +15,10 @@ variables:
   solution: '**/*.sln'
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
+  major-minor: 0.0 
+  revision: $[ counter(variables['major-minor'],0) ]
+
+name: $(major-minor).$(revision)
 
 steps:
 - task: NuGetToolInstaller@1
