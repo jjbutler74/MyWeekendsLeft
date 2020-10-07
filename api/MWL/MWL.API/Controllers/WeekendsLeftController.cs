@@ -9,7 +9,7 @@ using MWL.Models.Entities;
 namespace MWL.API.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api")]
     public class WeekendsLeftController : ControllerBase
     {
         private readonly ILogger<WeekendsLeftController> _logger;
@@ -23,7 +23,7 @@ namespace MWL.API.Controllers
         
         [HttpGet]
         [ApiVersion("1.0")]
-        [Route("")]
+        [Route("getweekends/")]
         public async Task<WeekendsLeftResponse> GetAsync([FromQuery] int age, string gender, string country)
         {
             Enum.TryParse(gender,true, out Gender gen);
@@ -49,7 +49,7 @@ namespace MWL.API.Controllers
 
         [HttpGet]
         [ApiVersion("2.0")]
-        [Route("")]
+        [Route("getweekends/")]
         public string WeekendsLeftResponse2()
         {
             return "Version 2.0 is not yet implemented.";

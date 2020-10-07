@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -59,8 +60,12 @@ namespace MWL.API
             }
 
             app.UseSwagger();
-            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "My Weekends Left API"));
-            
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My Weekends Left API");
+                c.RoutePrefix = string.Empty;  // Set Swagger UI at apps root
+            });
+
             app.UseHttpsRedirection();
 
             app.UseRouting();
