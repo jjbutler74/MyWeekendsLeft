@@ -22,7 +22,7 @@ namespace MWL.API.Controllers
         }
         
         [HttpGet]
-        [ApiVersion("1.0", Deprecated = true)]
+        [ApiVersion("1.0")]
         [Route("")]
         public async Task<WeekendsLeftResponse> GetAsync([FromQuery] int age, string gender, string country)
         {
@@ -46,13 +46,13 @@ namespace MWL.API.Controllers
             var ver = _weekendsLeftService.GetVersion();
             return ver;
         }
- 
+
         [HttpGet]
         [ApiVersion("2.0")]
         [Route("")]
         public string WeekendsLeftResponse2()
         {
-            return "no v2 wlr";
+            return "Version 2.0 is not yet implemented.";
         }
 
         [HttpGet]
@@ -60,7 +60,7 @@ namespace MWL.API.Controllers
         [Route("version/")]
         public string Version2()
         {
-            return "no v2 ver";
+            return "Version 2.0 is not yet implemented.";
         }
     }
 }
