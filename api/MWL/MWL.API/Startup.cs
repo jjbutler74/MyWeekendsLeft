@@ -4,8 +4,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using MWL.Services.Implementation;
 using MWL.Services.Interface;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace MWL.API
 {
@@ -26,11 +28,26 @@ namespace MWL.API
             services.AddScoped<ICountriesService, CountriesService>();
             services.AddScoped<ILifeExpectancyService, LifeExpectancyService>();
             services.AddMemoryCache();
-            services.AddApiVersioning(o =>
-            {
-                o.AssumeDefaultVersionWhenUnspecified = true;
-                o.DefaultApiVersion = new ApiVersion(1,0);
-            });
+
+            services.AddApiVersioning(
+                options =>
+                {
+                    options.AssumeDefaultVersionWhenUnspecified = true;
+                    options.DefaultApiVersion = new ApiVersion(1,0);
+                    options.ReportApiVersions = true; // reporting api versions will return the headers "api-supported-versions" and "api-deprecated-versions"
+                });
+            services.AddVersionedApiExplorer(
+                options =>
+                {
+                    // add the versioned api explorer, which also adds IApiVersionDescriptionProvider service (specified format code will format the version as "'v'major[.minor][-status]")
+                    options.GroupNameFormat = "'v'VVV";
+                });
+            services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
+            services.AddSwaggerGen(
+                options =>
+                {
+                    options.OperationFilter<SwaggerDefaultValues>(); // add a custom operation filter which sets default values
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -41,6 +58,9 @@ namespace MWL.API
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseSwagger();
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "My Weekends Left API"));
+            
             app.UseHttpsRedirection();
 
             app.UseRouting();

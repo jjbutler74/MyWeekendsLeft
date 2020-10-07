@@ -46,7 +46,7 @@ namespace MWL.API.Controllers
             var ver = _weekendsLeftService.GetVersion();
             return ver;
         }
- 
+
         [HttpGet]
         [ApiVersion("2.0")]
         [Route("")]
