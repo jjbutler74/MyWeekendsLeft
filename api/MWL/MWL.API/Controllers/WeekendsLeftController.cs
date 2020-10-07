@@ -22,7 +22,7 @@ namespace MWL.API.Controllers
         }
         
         [HttpGet]
-        [ApiVersion("1.0"]
+        [ApiVersion("1.0")]
         [Route("")]
         public async Task<WeekendsLeftResponse> GetAsync([FromQuery] int age, string gender, string country)
         {
