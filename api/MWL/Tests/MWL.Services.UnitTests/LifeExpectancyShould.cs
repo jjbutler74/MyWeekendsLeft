@@ -57,7 +57,7 @@ namespace MWL.Services.UnitTests
             var weekendsLeftResponse = lifeExpectancyService.LifeExpectancyCalculations(45, 30);
 
             // Assert
-            Assert.Equal("You have an estimated 1564 weekends left in your life, get out there and enjoy it all!!", weekendsLeftResponse.Message);
+            Assert.Equal("You have an estimated 1564 weekends left in your life, get out there and enjoy it all!!!", weekendsLeftResponse.Message);
         }
     }
 }
