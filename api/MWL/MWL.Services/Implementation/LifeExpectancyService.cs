@@ -52,7 +52,7 @@ namespace MWL.Services.Implementation
             weekendsLeftResponse.EstimatedAgeOfDeath = estimatedAgeOfDeath;
             weekendsLeftResponse.EstimatedDayOfDeath = estimatedDayOfDeath;
             weekendsLeftResponse.EstimatedWeekendsLeft = estimatedWeekendsLeft;
-            weekendsLeftResponse.Message = $"You have an estimated {estimatedWeekendsLeft} weekends left in your life, get out there and enjoy it!";
+            weekendsLeftResponse.Message = $"You have an estimated {estimatedWeekendsLeft} weekends left in your life, get out there and enjoy it all!!!";
             return weekendsLeftResponse;
         }
     }
