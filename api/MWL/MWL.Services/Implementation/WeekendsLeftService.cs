@@ -36,7 +36,7 @@ namespace MWL.Services.Implementation
                 return weekendsLeftResponse;
             }
 
-            // County Code Validation
+            // Country Code Validation
             if (!_countriesService.GetCountryData().ContainsKey(weekendsLeftRequest.Country.ToUpper()))
             {
                 weekendsLeftResponse.Errors = new[] {"Country Code is not valid"};
