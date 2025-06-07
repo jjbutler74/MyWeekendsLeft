@@ -3,6 +3,7 @@ using MWL.Models;
 using MWL.Models.Entities;
 using MWL.Services.Implementation;
 using MWL.Services.IntegrationTests.Shared;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace MWL.Services.IntegrationTests
@@ -11,7 +12,7 @@ namespace MWL.Services.IntegrationTests
     {
         [Fact]
         [Trait("Category", "Integration")]
-        public async void HaveRemainingLifeExpectancyYearsInRange()
+        public async Task HaveRemainingLifeExpectancyYearsInRange()
         {
             var cache = new MemoryCache(new MemoryCacheOptions());
             var countriesService = new CountriesService(cache);
