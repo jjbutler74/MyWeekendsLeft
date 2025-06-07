@@ -67,22 +67,25 @@ namespace MWL.Services.UnitTests
             _output.WriteLine("HaveEstimatedAgeOfDeathInRange was tested");
         }
 
-        [Fact]
+        [Theory]
         [Trait("Category", "Unit")]
-        public async Task NotAllowNegativeAgesAsync()
+        [InlineData(-5)]
+        [InlineData(0)]
+        [InlineData(121)]
+        public async Task NotAllowNegativeAgesAsync(int age)
         {
-            // Arrange - done in constructor 
+            // Arrange - done in constructor
 
             var weekendsLeftRequest = new WeekendsLeftRequest
             {
-                Age = -5
+                Age = age
             };
 
             // Act
             var weekendsLeftResponse = await weekendsLeftService.GetWeekendsLeftAsync(weekendsLeftRequest);
 
             // Assert
-            Assert.Contains("'Age' must be between 1 and 120. You entered -5.", weekendsLeftResponse.Errors);
+            Assert.Contains($"'Age' must be between 1 and 120. You entered {age}.", weekendsLeftResponse.Errors);
         }
 
         [Fact]
