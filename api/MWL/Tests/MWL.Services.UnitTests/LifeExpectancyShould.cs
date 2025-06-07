@@ -36,7 +36,7 @@ namespace MWL.Services.UnitTests
 
         [Fact]
         [Trait("Category", "Unit")]
-        public void HaveEstimatedEstimatedWeekendsLeft1512()
+        public void HaveEstimatedWeekendsLeft1512()
         {
             // Arrange - done in constructor 
 
