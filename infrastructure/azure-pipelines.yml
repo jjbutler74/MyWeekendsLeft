@@ -25,6 +25,12 @@ name: $(major).$(minor).$(revision)
 steps:
 - task: NuGetToolInstaller@1
 
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    version: '9.0.x'
+    includePreviewVersions: true
+
 - task: NuGetCommand@2
   inputs:
     restoreSolution: '$(solution)'
@@ -45,9 +51,9 @@ steps:
       !**\*TestAdapter.dll
       !**\obj\**
     searchFolder: '$(System.DefaultWorkingDirectory)'
-    otherConsoleOptions: '/Framework:.NETCoreApp,Version=3.1'
+    otherConsoleOptions: '/Framework:.NETCoreApp,Version=9.0'
 
-- task: PublishBuildArtifacts@1    
+- task: PublishBuildArtifacts@1
   displayName: 'Publish Artifact: drop'
   inputs:
     PathtoPublish: '$(build.artifactstagingdirectory)'
