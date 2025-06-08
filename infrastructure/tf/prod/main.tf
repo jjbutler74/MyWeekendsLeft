@@ -102,7 +102,7 @@ resource "azurerm_template_deployment" "webapp-corestack" {
   parameters = {
     "siteName"         = azurerm_app_service.main.name
     "extensionName"    = "Microsoft.AspNetCore.AzureAppServices.SiteExtension"
-    "extensionVersion" = "3.1.7"
+    "extensionVersion" = "9.0.0"
   }
   deployment_mode = "Incremental"
   depends_on      = [azurerm_app_service.main]
