@@ -38,6 +38,23 @@ namespace MWL.API
             services.AddScoped<ILifeExpectancyService, LifeExpectancyService>();
             services.AddMemoryCache();
 
+            // Add response compression (gzip and brotli)
+            services.AddResponseCompression(options =>
+            {
+                options.EnableForHttps = true;
+            });
+
+            // Add CORS policy
+            services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(builder =>
+                {
+                    builder.AllowAnyOrigin()
+                           .AllowAnyMethod()
+                           .AllowAnyHeader();
+                });
+            });
+
             // Configure HttpClient with timeout and retry policies
             services.AddHttpClient<ILifeExpectancyService, LifeExpectancyService>()
                 .ConfigureHttpClient(client =>
@@ -78,6 +95,9 @@ namespace MWL.API
                 app.UseDeveloperExceptionPage();
             }
 
+            // Enable response compression
+            app.UseResponseCompression();
+
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
@@ -88,6 +108,9 @@ namespace MWL.API
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            // Enable CORS
+            app.UseCors();
 
             app.UseAuthorization();
 
