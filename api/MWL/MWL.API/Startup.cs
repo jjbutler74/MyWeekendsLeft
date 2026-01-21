@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -29,6 +30,8 @@ namespace MWL.API
             services.AddScoped<ICountriesService, CountriesService>();
             services.AddScoped<ILifeExpectancyService, LifeExpectancyService>();
             services.AddMemoryCache();
+            services.AddHttpClient<ILifeExpectancyService, LifeExpectancyService>();
+            services.AddHealthChecks();
 
             services.AddApiVersioning(
                 options =>
@@ -36,8 +39,8 @@ namespace MWL.API
                     options.AssumeDefaultVersionWhenUnspecified = true;
                     options.DefaultApiVersion = new ApiVersion(1,0);
                     options.ReportApiVersions = true; // reporting api versions will return the headers "api-supported-versions" and "api-deprecated-versions"
-                });
-            services.AddVersionedApiExplorer(
+                })
+                .AddApiExplorer(
                 options =>
                 {
                     // add the versioned api explorer, which also adds IApiVersionDescriptionProvider service (specified format code will format the version as "'v'major[.minor][-status]")
@@ -75,6 +78,7 @@ namespace MWL.API
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHealthChecks("/health");
             });
         }
     }

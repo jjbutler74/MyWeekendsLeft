@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
+using Moq;
 using MWL.Services.Implementation;
 using Xunit;
 
@@ -15,8 +17,9 @@ namespace MWL.Services.IntegrationTests
         {
             // Arrange
             var cache = new MemoryCache(new MemoryCacheOptions()); // https://stackoverflow.com/a/40685073/5854
-            var countriesService = new CountriesService(cache);
-            
+            var mockLogger = new Mock<ILogger<CountriesService>>();
+            var countriesService = new CountriesService(cache, mockLogger.Object);
+
             // Act
             var countries = countriesService.GetCountryData();
 
@@ -30,7 +33,8 @@ namespace MWL.Services.IntegrationTests
         {
             // Arrange
             var cache = new MemoryCache(new MemoryCacheOptions());
-            var countriesService = new CountriesService(cache); 
+            var mockLogger = new Mock<ILogger<CountriesService>>();
+            var countriesService = new CountriesService(cache, mockLogger.Object);
 
             // Act
             var countries = countriesService.GetCountryData();
