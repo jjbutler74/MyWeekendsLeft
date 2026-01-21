@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
@@ -25,9 +26,25 @@ namespace MWL.API.Controllers
         [HttpGet]
         [ApiVersion("1.0")]
         [Route("getweekends/")]
-        public async Task<WeekendsLeftResponse> GetAsync([FromQuery] int age, string gender, string country)
+        [ProducesResponseType(typeof(WeekendsLeftResponse), 200)]
+        [ProducesResponseType(typeof(ProblemDetails), 400)]
+        [ProducesResponseType(typeof(ProblemDetails), 503)]
+        public async Task<ActionResult<WeekendsLeftResponse>> GetAsync([FromQuery] int age, string gender, string country)
         {
-            Enum.TryParse(gender,true, out Gender gen);
+            _logger.LogInformation("Received request for age: {Age}, gender: {Gender}, country: {Country}", age, gender, country);
+
+            // Validate gender parameter
+            if (!Enum.TryParse<Gender>(gender, true, out Gender gen) || gen == Gender.Unknown)
+            {
+                _logger.LogWarning("Invalid gender parameter: {Gender}", gender);
+                return BadRequest(new ProblemDetails
+                {
+                    Title = "Invalid Gender",
+                    Detail = $"Gender '{gender}' is not valid. Allowed values: Male, Female",
+                    Status = 400
+                });
+            }
+
             var weekendsLeftRequest = new WeekendsLeftRequest
             {
                 Age = age,
@@ -35,8 +52,45 @@ namespace MWL.API.Controllers
                 Country = country
             };
 
-            var weekendsLeftResponse = await _weekendsLeftService.GetWeekendsLeftAsync(weekendsLeftRequest);
-            return weekendsLeftResponse;
+            try
+            {
+                var weekendsLeftResponse = await _weekendsLeftService.GetWeekendsLeftAsync(weekendsLeftRequest);
+
+                // Check if validation errors occurred
+                if (weekendsLeftResponse.Errors != null && weekendsLeftResponse.Errors.Any())
+                {
+                    _logger.LogWarning("Validation failed for request: {Errors}", string.Join(", ", weekendsLeftResponse.Errors));
+                    return BadRequest(new ProblemDetails
+                    {
+                        Title = "Validation Failed",
+                        Detail = string.Join("; ", weekendsLeftResponse.Errors),
+                        Status = 400
+                    });
+                }
+
+                _logger.LogInformation("Successfully calculated weekends left: {Weekends}", weekendsLeftResponse.EstimatedWeekendsLeft);
+                return Ok(weekendsLeftResponse);
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError(ex, "Service unavailable while processing request");
+                return StatusCode(503, new ProblemDetails
+                {
+                    Title = "Service Unavailable",
+                    Detail = ex.Message,
+                    Status = 503
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error processing weekends left request");
+                return StatusCode(500, new ProblemDetails
+                {
+                    Title = "Internal Server Error",
+                    Detail = "An unexpected error occurred while processing your request",
+                    Status = 500
+                });
+            }
         }
 
         [HttpGet]
