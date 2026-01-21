@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Moq;
 using MWL.Models;
 using MWL.Models.Entities;
@@ -40,8 +41,9 @@ namespace MWL.Services.UnitTests
             };
             mockLifeExpectancyService.Setup(x => x.LifeExpectancyCalculations(Moq.It.IsAny<int>(),Moq.It.IsAny<double>())).Returns(wlr);
             mockLifeExpectancyService.Setup(x => x.GetRemainingLifeExpectancyYearsAsync(It.IsAny<WeekendsLeftRequest>())).ReturnsAsync(34.8);
-            
-            weekendsLeftService = new WeekendsLeftService(mockConfiguration.Object, mockCountriesService.Object, mockLifeExpectancyService.Object);
+
+            var mockLogger = new Mock<ILogger<WeekendsLeftService>>();
+            weekendsLeftService = new WeekendsLeftService(mockConfiguration.Object, mockCountriesService.Object, mockLifeExpectancyService.Object, mockLogger.Object);
 
             _output = output;
         }

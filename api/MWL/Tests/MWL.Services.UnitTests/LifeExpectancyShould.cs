@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System.Net.Http;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Moq;
 using MWL.Services.Implementation;
 using MWL.Services.Interface;
@@ -12,9 +15,12 @@ namespace MWL.Services.UnitTests
 
         public LifeExpectancyShould()
         {
-            var mockConfiguration = new Mock<IConfiguration>(); // Moq
-            var mockCountriesService = new Mock<ICountriesService>(); // Moq
-            lifeExpectancyService = new LifeExpectancyService(mockConfiguration.Object, mockCountriesService.Object); // Moq
+            var mockConfiguration = new Mock<IConfiguration>();
+            var mockCountriesService = new Mock<ICountriesService>();
+            var mockHttpClient = new HttpClient();
+            var mockLogger = new Mock<ILogger<LifeExpectancyService>>();
+            var mockCache = new Mock<IMemoryCache>();
+            lifeExpectancyService = new LifeExpectancyService(mockConfiguration.Object, mockCountriesService.Object, mockHttpClient, mockLogger.Object, mockCache.Object);
         }
 
         [Theory]
