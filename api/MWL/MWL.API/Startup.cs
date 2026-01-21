@@ -1,3 +1,5 @@
+using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Builder;
@@ -9,6 +11,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using MWL.Services.Implementation;
 using MWL.Services.Interface;
+using Polly;
+using Polly.Extensions.Http;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace MWL.API
@@ -25,12 +29,24 @@ namespace MWL.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // Validate critical configuration at startup
+            ValidateConfiguration();
+
             services.AddControllers();
             services.AddScoped<IWeekendsLeftService, WeekendsLeftService>();
             services.AddScoped<ICountriesService, CountriesService>();
             services.AddScoped<ILifeExpectancyService, LifeExpectancyService>();
             services.AddMemoryCache();
-            services.AddHttpClient<ILifeExpectancyService, LifeExpectancyService>();
+
+            // Configure HttpClient with timeout and retry policies
+            services.AddHttpClient<ILifeExpectancyService, LifeExpectancyService>()
+                .ConfigureHttpClient(client =>
+                {
+                    client.Timeout = TimeSpan.FromSeconds(10);
+                })
+                .AddPolicyHandler(GetRetryPolicy())
+                .AddPolicyHandler(GetCircuitBreakerPolicy());
+
             services.AddHealthChecks();
 
             services.AddApiVersioning(
@@ -80,6 +96,40 @@ namespace MWL.API
                 endpoints.MapControllers();
                 endpoints.MapHealthChecks("/health");
             });
+        }
+
+        private void ValidateConfiguration()
+        {
+            var lifeExpectancyApiUri = Configuration.GetValue<string>("MwlConfiguration:LifeExpectancyApiUri");
+
+            if (string.IsNullOrWhiteSpace(lifeExpectancyApiUri))
+            {
+                throw new InvalidOperationException(
+                    "Configuration error: 'MwlConfiguration:LifeExpectancyApiUri' is required but not configured in appsettings.json");
+            }
+
+            if (!Uri.TryCreate(lifeExpectancyApiUri, UriKind.Absolute, out var uri))
+            {
+                throw new InvalidOperationException(
+                    $"Configuration error: 'MwlConfiguration:LifeExpectancyApiUri' is not a valid URI: {lifeExpectancyApiUri}");
+            }
+        }
+
+        private static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
+        {
+            // Retry 3 times with exponential backoff (2^attempt seconds: 2s, 4s, 8s)
+            return HttpPolicyExtensions
+                .HandleTransientHttpError() // Handles 5xx and 408 responses
+                .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.NotFound) // Also retry 404s
+                .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+        }
+
+        private static IAsyncPolicy<HttpResponseMessage> GetCircuitBreakerPolicy()
+        {
+            // Break circuit after 5 consecutive failures, stay open for 30 seconds
+            return HttpPolicyExtensions
+                .HandleTransientHttpError()
+                .CircuitBreakerAsync(5, TimeSpan.FromSeconds(30));
         }
     }
 }
