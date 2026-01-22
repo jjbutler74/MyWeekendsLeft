@@ -19,6 +19,7 @@ env:
   DOTNET_VERSION: '9.0.x'
   AZURE_WEBAPP_PACKAGE_PATH: './publish'
   WORKING_DIRECTORY: 'api/MWL'
+  VERSION: '1.0.${{ github.run_number }}'
 
 jobs:
   build-and-test:
@@ -34,11 +35,22 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
+    - name: Set Build Number in appsettings
+      run: |
+        sed -i 's/"BuildNumber": "0"/"BuildNumber": "${{ env.VERSION }}"/g' ${{ env.WORKING_DIRECTORY }}/MWL.API/appsettings.json
+        cat ${{ env.WORKING_DIRECTORY }}/MWL.API/appsettings.json
+
     - name: Restore dependencies
       run: dotnet restore ${{ env.WORKING_DIRECTORY }}/MWL.sln
 
     - name: Build
-      run: dotnet build ${{ env.WORKING_DIRECTORY }}/MWL.sln --configuration Release --no-restore
+      run: |
+        dotnet build ${{ env.WORKING_DIRECTORY }}/MWL.sln \
+          --configuration Release \
+          --no-restore \
+          -p:Version=${{ env.VERSION }} \
+          -p:AssemblyVersion=${{ env.VERSION }}.0 \
+          -p:FileVersion=${{ env.VERSION }}.0
 
     - name: Run Unit Tests
       run: |
@@ -109,6 +121,12 @@ jobs:
         name: dotnet-app
         path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
+    - name: Set Build Number in appsettings for DEV
+      run: |
+        sed -i 's/"BuildNumber": "0"/"BuildNumber": "1.0.${{ github.run_number }}"/g' ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/appsettings.json
+        sed -i 's/"Environment": "Local"/"Environment": "DEV"/g' ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/appsettings.json
+        cat ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/appsettings.json
+
     - name: Deploy to Azure App Service (DEV)
       id: deploy-to-dev
       uses: azure/webapps-deploy@v3
@@ -141,6 +159,12 @@ jobs:
       with:
         name: dotnet-app
         path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+    - name: Set Build Number in appsettings for UAT
+      run: |
+        sed -i 's/"BuildNumber": "0"/"BuildNumber": "1.0.${{ github.run_number }}"/g' ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/appsettings.json
+        sed -i 's/"Environment": "Local"/"Environment": "UAT"/g' ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/appsettings.json
+        cat ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/appsettings.json
 
     - name: Deploy to Azure App Service (UAT)
       id: deploy-to-uat
