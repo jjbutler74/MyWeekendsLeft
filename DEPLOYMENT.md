@@ -40,8 +40,7 @@ If you prefer not to use Terraform, create these resources manually:
 1. Resource Group: `rg-mwl-prod-001`
 2. App Service Plan: `plan-mwl-prod-001` (Windows, S1)
 3. App Service: `app-mwl-prod-001` (.NET 9)
-4. Staging Slot for the App Service
-5. Application Insights: `appi-mwl-prod-001`
+4. Application Insights: `appi-mwl-prod-001`
 
 ---
 
@@ -50,7 +49,7 @@ If you prefer not to use Terraform, create these resources manually:
 ### Get Publish Profiles from Azure
 
 ```bash
-# Production publish profile
+# Get production publish profile
 az webapp deployment list-publishing-profiles \
   --name app-mwl-prod-001 \
   --resource-group rg-mwl-prod-001 \
@@ -59,28 +58,16 @@ az webapp deployment list-publishing-profiles \
 # Copy the entire XML output
 ```
 
-```bash
-# Staging publish profile
-az webapp deployment list-publishing-profiles \
-  --name app-mwl-prod-001 \
-  --resource-group rg-mwl-prod-001 \
-  --slot staging \
-  --xml
-
-# Copy the entire XML output
-```
-
-### Add Secrets to GitHub
+### Add Secret to GitHub
 
 1. Go to your GitHub repository
 2. Click **Settings** → **Secrets and variables** → **Actions**
 3. Click **New repository secret**
-4. Add these two secrets:
+4. Add this secret:
 
 | Secret Name | Value |
 |------------|-------|
-| `AZURE_WEBAPP_PUBLISH_PROFILE` | Paste the **production** XML |
-| `AZURE_WEBAPP_PUBLISH_PROFILE_STAGING` | Paste the **staging** XML |
+| `AZURE_WEBAPP_PUBLISH_PROFILE` | Paste the XML output from above |
 
 ---
 
@@ -97,8 +84,7 @@ git push origin main
 The GitHub Actions workflow will automatically:
 1. ✅ Build the application
 2. ✅ Run all 39 tests
-3. ✅ Deploy to staging
-4. ✅ Deploy to production
+3. ✅ Deploy to production
 
 ### Method 2: Manual Trigger
 
@@ -127,8 +113,6 @@ curl https://app-mwl-prod-001.azurewebsites.net/health
 # Test API endpoint
 curl "https://app-mwl-prod-001.azurewebsites.net/api/getweekends/?age=45&gender=male&country=USA"
 
-# Test staging
-curl https://app-mwl-prod-001-staging.azurewebsites.net/health
 ```
 
 Expected responses:
@@ -157,7 +141,7 @@ Now deployments to production will require manual approval!
 Your API is now deployed with:
 
 - ✅ Automated CI/CD pipeline
-- ✅ Blue-green deployments (staging → production)
+- ✅ Direct to production deployments
 - ✅ Health monitoring
 - ✅ Application Insights telemetry
 - ✅ All 39 tests running on every deployment

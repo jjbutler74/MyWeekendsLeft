@@ -16,7 +16,6 @@ This directory contains the infrastructure-as-code and deployment configuration 
 - **Resources**:
   - App Service Plan (S1, Windows)
   - App Service (Production)
-  - App Service Slot (Staging)
   - Application Insights
   - Resource Group
 
@@ -48,13 +47,12 @@ terraform apply -var="environment=prod"
 **Important Outputs:**
 - `app_service_name` - Your Azure App Service name
 - `app_service_default_hostname` - Production URL
-- `staging_slot_hostname` - Staging URL
 
 ### 2. Configure GitHub Secrets
 
-You need to add two secrets to your GitHub repository:
+You need to add one secret to your GitHub repository:
 
-#### Get Publish Profiles from Azure
+#### Get Publish Profile from Azure
 
 **For Production:**
 ```bash
@@ -64,16 +62,7 @@ az webapp deployment list-publishing-profiles \
   --xml > production-profile.xml
 ```
 
-**For Staging:**
-```bash
-az webapp deployment list-publishing-profiles \
-  --name app-mwl-prod-001 \
-  --resource-group rg-mwl-prod-001 \
-  --slot staging \
-  --xml > staging-profile.xml
-```
-
-#### Add Secrets to GitHub
+#### Add Secret to GitHub
 
 1. Go to your repository on GitHub
 2. Navigate to **Settings** → **Secrets and variables** → **Actions**
@@ -95,10 +84,8 @@ rm production-profile.xml staging-profile.xml
 For production approvals and protection:
 
 1. Go to **Settings** → **Environments**
-2. Create two environments:
-   - **Staging**
-   - **Production**
-3. For **Production** environment:
+2. Create a **Production** environment
+3. Configure the Production environment:
    - Add required reviewers (yourself or team members)
    - Set deployment branch policy to `main` only
    - Add environment secrets if needed
@@ -122,12 +109,10 @@ For production approvals and protection:
 ```mermaid
 graph LR
     A[Build & Test] --> B{Tests Pass?}
-    B -->|Yes| C[Deploy to Staging]
+    B -->|Yes| C[Deploy to Production]
     B -->|No| D[❌ Fail]
-    C --> E[Verify Staging]
-    E --> F[Deploy to Production]
-    F --> G[Verify Production]
-    G --> H[✅ Complete]
+    C --> E[Verify Production]
+    E --> F[✅ Complete]
 ```
 
 ### Test Execution
@@ -145,14 +130,9 @@ The pipeline runs **39 tests** in three categories:
    - Build solution in Release mode
    - Run all tests with code coverage
 
-2. **Deploy to Staging**
+2. **Deploy to Production**
    - Publish application
-   - Deploy to staging slot
-   - Verify `/health` endpoint
-
-3. **Deploy to Production**
-   - Download build artifact
-   - Deploy to production
+   - Deploy to production App Service
    - Verify `/health` endpoint
 
 ---
@@ -177,7 +157,6 @@ All resources follow Azure naming best practices:
 ✅ **TLS 1.2 Minimum**: Secure communications enforced
 ✅ **.NET 9**: Latest framework configured
 ✅ **Application Insights**: Full telemetry and monitoring
-✅ **Staging Slot**: Blue-green deployments enabled
 ✅ **CORS**: Configured to allow all origins (adjust as needed)
 ✅ **HTTP/2**: Enabled for better performance
 ✅ **Always On**: Prevents cold starts
@@ -198,7 +177,6 @@ After `terraform apply`, you'll get:
 
 - Resource group name
 - App Service URL (production)
-- Staging slot URL
 - Application Insights keys
 - App ID
 
