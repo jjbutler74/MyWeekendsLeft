@@ -16,7 +16,7 @@ on:
           - uat
 
 env:
-  DOTNET_VERSION: '9.0.x'
+  DOTNET_VERSION: '10.0.x'
   AZURE_WEBAPP_PACKAGE_PATH: './publish'
   WORKING_DIRECTORY: 'api/MWL'
   VERSION: '1.0.${{ github.run_number }}'
