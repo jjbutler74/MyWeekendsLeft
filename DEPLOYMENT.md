@@ -4,99 +4,137 @@ This guide will help you deploy the MyWeekendsLeft API to Azure using GitHub Act
 
 ## Prerequisites
 
-- ✅ Azure subscription
+- ✅ Azure subscription with existing App Services
 - ✅ GitHub repository (this repo)
-- ✅ Azure CLI installed (`az` command)
-- ✅ Terraform installed (>= 1.0)
+- ✅ Azure CLI installed (`az` command) - optional for Terraform
 
 ---
 
-## Step 1: Deploy Azure Infrastructure
+## Existing Azure Resources
 
-### Option A: Using Terraform (Recommended)
+This project uses **existing** Azure resources:
 
-```bash
-# Navigate to Terraform directory
-cd infrastructure/tf/prod
+### DEV Environment
+- Resource Group: `dev`
+- App Service: `dev-myweekendsleft-api`
+- URL: https://dev-myweekendsleft-api.azurewebsites.net
 
-# Initialize Terraform
-terraform init
-
-# Preview what will be created
-terraform plan -var="environment=prod"
-
-# Create the infrastructure
-terraform apply -var="environment=prod"
-
-# Save the outputs
-terraform output
-```
-
-**Important**: Save the `app_service_name` from the output - you'll need it for GitHub Actions.
-
-### Option B: Manual Azure Portal Setup
-
-If you prefer not to use Terraform, create these resources manually:
-1. Resource Group: `rg-mwl-prod-001`
-2. App Service Plan: `plan-mwl-prod-001` (Windows, S1)
-3. App Service: `app-mwl-prod-001` (.NET 9)
-4. Application Insights: `appi-mwl-prod-001`
+### UAT Environment
+- Resource Group: `uat`
+- App Service: `uat-myweekendsleft-api`
+- URL: https://uat-myweekendsleft-api.azurewebsites.net
 
 ---
 
-## Step 2: Configure GitHub Secrets
+## Step 1: Configure GitHub Secrets
+
+You need to add publish profiles for both environments.
 
 ### Get Publish Profiles from Azure
 
 ```bash
-# Get production publish profile
+# DEV publish profile
 az webapp deployment list-publishing-profiles \
-  --name app-mwl-prod-001 \
-  --resource-group rg-mwl-prod-001 \
+  --name dev-myweekendsleft-api \
+  --resource-group dev \
   --xml
 
 # Copy the entire XML output
 ```
 
-### Add Secret to GitHub
+```bash
+# UAT publish profile
+az webapp deployment list-publishing-profiles \
+  --name uat-myweekendsleft-api \
+  --resource-group uat \
+  --xml
+
+# Copy the entire XML output
+```
+
+### Add Secrets to GitHub
 
 1. Go to your GitHub repository
 2. Click **Settings** → **Secrets and variables** → **Actions**
 3. Click **New repository secret**
-4. Add this secret:
+4. Add these two secrets:
 
-| Secret Name | Value |
-|------------|-------|
-| `AZURE_WEBAPP_PUBLISH_PROFILE` | Paste the XML output from above |
+| Secret Name | Value | Environment |
+|------------|-------|-------------|
+| `AZURE_WEBAPP_PUBLISH_PROFILE_DEV` | Paste the **DEV** XML | DEV |
+| `AZURE_WEBAPP_PUBLISH_PROFILE_UAT` | Paste the **UAT** XML | UAT |
 
 ---
 
-## Step 3: Trigger First Deployment
+## Step 2: Understand the Deployment Workflow
 
-### Method 1: Push to Main (Automatic)
+### Automatic Deployments
+
+**DEV Environment:**
+- Trigger: Push to `develop` branch
+- Workflow: Build → Test → Deploy to DEV
+
+**UAT Environment:**
+- Trigger: Push to `main` branch
+- Workflow: Build → Test → Deploy to UAT
+
+### Manual Deployments
+
+You can manually trigger deployments to either environment:
+
+1. Go to **Actions** tab in GitHub
+2. Select "Build, Test, and Deploy"
+3. Click **Run workflow**
+4. Select branch (main or develop)
+5. Choose environment (dev or uat)
+6. Click **Run workflow**
+
+---
+
+## Step 3: Deploy to DEV
+
+### Option A: Push to develop branch
 
 ```bash
+git checkout -b develop
 git add .
 git commit -m "Configure deployment"
+git push origin develop
+```
+
+The GitHub Actions workflow will automatically:
+1. ✅ Build the application
+2. ✅ Run all 39 tests
+3. ✅ Deploy to DEV environment
+
+### Option B: Manual trigger
+
+See "Manual Deployments" above
+
+---
+
+## Step 4: Deploy to UAT
+
+### Option A: Merge to main branch
+
+```bash
+git checkout main
+git merge develop
 git push origin main
 ```
 
 The GitHub Actions workflow will automatically:
 1. ✅ Build the application
 2. ✅ Run all 39 tests
-3. ✅ Deploy to production
+3. ✅ Deploy to UAT environment
 
-### Method 2: Manual Trigger
+### Option B: Manual trigger
 
-1. Go to **Actions** tab in GitHub
-2. Select "Build, Test, and Deploy"
-3. Click **Run workflow**
-4. Select `main` branch
-5. Click **Run workflow**
+See "Manual Deployments" above
 
 ---
 
-## Step 4: Verify Deployment
+## Step 5: Verify Deployment
 
 ### Check GitHub Actions
 
@@ -104,15 +142,24 @@ The GitHub Actions workflow will automatically:
 2. Watch the workflow progress
 3. All steps should show green ✅
 
-### Test the Deployed API
+### Test the Deployed APIs
 
+**DEV:**
 ```bash
-# Test health endpoint (replace with your URL)
-curl https://app-mwl-prod-001.azurewebsites.net/health
+# Health check
+curl https://dev-myweekendsleft-api.azurewebsites.net/health
 
-# Test API endpoint
-curl "https://app-mwl-prod-001.azurewebsites.net/api/getweekends/?age=45&gender=male&country=USA"
+# API endpoint
+curl "https://dev-myweekendsleft-api.azurewebsites.net/api/getweekends/?age=45&gender=male&country=USA"
+```
 
+**UAT:**
+```bash
+# Health check
+curl https://uat-myweekendsleft-api.azurewebsites.net/health
+
+# API endpoint
+curl "https://uat-myweekendsleft-api.azurewebsites.net/api/getweekends/?age=45&gender=male&country=USA"
 ```
 
 Expected responses:
@@ -121,18 +168,43 @@ Expected responses:
 
 ---
 
-## Step 5: (Optional) Configure Environment Protection
+## Step 6: (Optional) Configure Terraform
 
-For production approvals:
+If you want to manage your infrastructure with Terraform:
 
-1. Go to **Settings** → **Environments**
-2. Click **New environment**
-3. Name it `Production`
-4. Check **Required reviewers**
-5. Add yourself as a reviewer
-6. Save
+### For UAT:
+```bash
+cd infrastructure/tf/uat
 
-Now deployments to production will require manual approval!
+# Initialize Terraform
+terraform init
+
+# Import existing resources
+terraform import azurerm_windows_web_app.main /subscriptions/{subscription-id}/resourceGroups/uat/providers/Microsoft.Web/sites/uat-myweekendsleft-api
+
+# Plan changes
+terraform plan
+
+# Apply if needed
+terraform apply
+```
+
+### For DEV:
+```bash
+cd infrastructure/tf/dev
+
+# Initialize Terraform
+terraform init
+
+# Import existing resources
+terraform import azurerm_windows_web_app.main /subscriptions/{subscription-id}/resourceGroups/dev/providers/Microsoft.Web/sites/dev-myweekendsleft-api
+
+# Plan changes
+terraform plan
+
+# Apply if needed
+terraform apply
+```
 
 ---
 
@@ -140,64 +212,42 @@ Now deployments to production will require manual approval!
 
 Your API is now deployed with:
 
-- ✅ Automated CI/CD pipeline
-- ✅ Direct to production deployments
-- ✅ Health monitoring
+- ✅ Automated CI/CD pipeline for both DEV and UAT
+- ✅ Separate branches for environment control
+- ✅ Health monitoring on both environments
 - ✅ Application Insights telemetry
 - ✅ All 39 tests running on every deployment
 
 ---
 
-## 📊 What's Next?
+## 📊 Deployment Flow
 
-### Monitor Your API
-
-**Application Insights URL:**
 ```
-https://portal.azure.com/#resource/subscriptions/{subscription-id}/resourceGroups/rg-mwl-prod-001/providers/microsoft.insights/components/appi-mwl-prod-001
+┌─────────────┐
+│   develop   │  Push → Build & Test → Deploy to DEV
+└─────────────┘
+
+┌─────────────┐
+│     main    │  Push → Build & Test → Deploy to UAT
+└─────────────┘
 ```
-
-**Key Metrics:**
-- Request rate and response times
-- Failed requests
-- Dependencies (population.io API calls)
-- Exceptions
-
-### View Logs
-
-```bash
-# Stream live logs
-az webapp log tail --name app-mwl-prod-001 --resource-group rg-mwl-prod-001
-
-# Or view in Azure Portal:
-# App Service → Monitoring → Log stream
-```
-
-### Make Changes
-
-1. Create a branch: `git checkout -b feature/my-feature`
-2. Make changes and commit
-3. Push and create PR
-4. GitHub Actions runs tests automatically
-5. Merge to `main` when ready
-6. Automatic deployment triggers!
 
 ---
 
 ## 🔧 Troubleshooting
 
-### Deployment Fails with "Unauthorized"
+### ❌ "Deployment failed: Unauthorized"
 
 **Solution**: Regenerate publish profiles and update GitHub secrets
 
 ```bash
-# Get new profiles
-az webapp deployment list-publishing-profiles --name app-mwl-prod-001 --resource-group rg-mwl-prod-001 --xml
+# Get new profile for DEV
+az webapp deployment list-publishing-profiles --name dev-myweekendsleft-api --resource-group dev --xml
 
-# Update GitHub secret AZURE_WEBAPP_PUBLISH_PROFILE with new XML
+# Update GitHub secret AZURE_WEBAPP_PUBLISH_PROFILE_DEV with new XML
 ```
 
-### Tests Fail in Pipeline
+### ❌ "Tests failed"
 
 **Solution**: Run tests locally first
 
@@ -208,21 +258,14 @@ dotnet test --configuration Release
 # Fix any failing tests before pushing
 ```
 
-### Health Check Fails
+### ❌ "Health check failed"
 
 **Solution**: Check app logs in Azure Portal
 
-```bash
-az webapp log tail --name app-mwl-prod-001 --resource-group rg-mwl-prod-001
-
-# Look for startup errors or exceptions
-```
-
-### App is Slow/Timing Out
-
-**Solution**: Check Application Insights for slow dependencies
-
-The population.io API might be slow - check the retry policies and caching.
+1. Go to Azure Portal
+2. Navigate to your App Service (dev or uat)
+3. Go to Monitoring → Log stream
+4. Look for startup errors or exceptions
 
 ---
 
@@ -232,25 +275,6 @@ The population.io API might be slow - check the retry policies and caching.
 - **GitHub Actions Logs**: Actions tab in GitHub
 - **Azure Logs**: Azure Portal → App Service → Monitoring
 - **Application Insights**: Azure Portal → Application Insights
-
----
-
-## 🔄 Updating Infrastructure
-
-If you need to change infrastructure (e.g., scale up):
-
-```bash
-cd infrastructure/tf/prod
-
-# Edit main.tf (e.g., change sku_name to "P1V2")
-vim main.tf
-
-# Preview changes
-terraform plan -var="environment=prod"
-
-# Apply if looks good
-terraform apply -var="environment=prod"
-```
 
 ---
 
