@@ -1,0 +1,148 @@
+name: Build, Test, and Deploy
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  AZURE_WEBAPP_NAME: 'app-mwl-prod-001'
+  AZURE_WEBAPP_PACKAGE_PATH: './publish'
+  WORKING_DIRECTORY: 'api/MWL'
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Restore dependencies
+      run: dotnet restore ${{ env.WORKING_DIRECTORY }}/MWL.sln
+
+    - name: Build
+      run: dotnet build ${{ env.WORKING_DIRECTORY }}/MWL.sln --configuration Release --no-restore
+
+    - name: Run Unit Tests
+      run: |
+        dotnet test ${{ env.WORKING_DIRECTORY }}/MWL.sln \
+          --configuration Release \
+          --no-build \
+          --filter "Category=Unit" \
+          --logger "trx;LogFileName=unit-tests.trx" \
+          --collect:"XPlat Code Coverage" \
+          --results-directory ./test-results/unit
+
+    - name: Run Service Integration Tests
+      run: |
+        dotnet test ${{ env.WORKING_DIRECTORY }}/MWL.sln \
+          --configuration Release \
+          --no-build \
+          --filter "Category=Integration" \
+          --logger "trx;LogFileName=integration-tests.trx" \
+          --results-directory ./test-results/integration
+
+    - name: Run API Integration Tests
+      run: |
+        dotnet test ${{ env.WORKING_DIRECTORY }}/MWL.sln \
+          --configuration Release \
+          --no-build \
+          --filter "Category=API-Integration" \
+          --logger "trx;LogFileName=api-tests.trx" \
+          --results-directory ./test-results/api
+
+    - name: Publish Test Results
+      uses: dorny/test-reporter@v1
+      if: always()
+      with:
+        name: Test Results
+        path: 'test-results/**/*.trx'
+        reporter: dotnet-trx
+        fail-on-error: true
+
+    - name: Publish Application
+      run: |
+        dotnet publish ${{ env.WORKING_DIRECTORY }}/MWL.API/MWL.API.csproj \
+          --configuration Release \
+          --output ${{ env.AZURE_WEBAPP_PACKAGE_PATH }} \
+          --no-build
+
+    - name: Upload artifact for deployment
+      uses: actions/upload-artifact@v4
+      with:
+        name: dotnet-app
+        path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+        retention-days: 1
+
+  deploy-staging:
+    name: Deploy to Staging
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment:
+      name: 'Staging'
+      url: ${{ steps.deploy-to-staging.outputs.webapp-url }}
+
+    steps:
+    - name: Download artifact from build job
+      uses: actions/download-artifact@v4
+      with:
+        name: dotnet-app
+        path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+    - name: Deploy to Azure App Service (Staging Slot)
+      id: deploy-to-staging
+      uses: azure/webapps-deploy@v3
+      with:
+        app-name: ${{ env.AZURE_WEBAPP_NAME }}
+        slot-name: 'staging'
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_STAGING }}
+        package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+    - name: Verify Staging Deployment
+      run: |
+        echo "Waiting for staging slot to be ready..."
+        sleep 30
+        curl -f -s -o /dev/null -w "%{http_code}" ${{ steps.deploy-to-staging.outputs.webapp-url }}/health || exit 1
+        echo "Staging deployment verified successfully!"
+
+  deploy-production:
+    name: Deploy to Production
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment:
+      name: 'Production'
+      url: ${{ steps.deploy-to-production.outputs.webapp-url }}
+
+    steps:
+    - name: Download artifact from build job
+      uses: actions/download-artifact@v4
+      with:
+        name: dotnet-app
+        path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+    - name: Deploy to Azure App Service (Production)
+      id: deploy-to-production
+      uses: azure/webapps-deploy@v3
+      with:
+        app-name: ${{ env.AZURE_WEBAPP_NAME }}
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+    - name: Verify Production Deployment
+      run: |
+        echo "Waiting for production to be ready..."
+        sleep 30
+        curl -f -s -o /dev/null -w "%{http_code}" ${{ steps.deploy-to-production.outputs.webapp-url }}/health || exit 1
+        echo "Production deployment verified successfully!"
