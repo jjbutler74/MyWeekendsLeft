@@ -1,7 +1,7 @@
 # MyWeekendsLeft
 A service to inspire people to get busy living!
 
-This project now targets **.NET 9**.
+This project now targets **.NET 10**.
 
 - Azure DevOps: https://dev.azure.com/jjbutler74/MyWeekendsLeft
 
