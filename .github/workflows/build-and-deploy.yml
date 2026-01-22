@@ -84,41 +84,9 @@ jobs:
         path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
         retention-days: 1
 
-  deploy-staging:
-    name: Deploy to Staging
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    environment:
-      name: 'Staging'
-      url: ${{ steps.deploy-to-staging.outputs.webapp-url }}
-
-    steps:
-    - name: Download artifact from build job
-      uses: actions/download-artifact@v4
-      with:
-        name: dotnet-app
-        path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-
-    - name: Deploy to Azure App Service (Staging Slot)
-      id: deploy-to-staging
-      uses: azure/webapps-deploy@v3
-      with:
-        app-name: ${{ env.AZURE_WEBAPP_NAME }}
-        slot-name: 'staging'
-        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_STAGING }}
-        package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-
-    - name: Verify Staging Deployment
-      run: |
-        echo "Waiting for staging slot to be ready..."
-        sleep 30
-        curl -f -s -o /dev/null -w "%{http_code}" ${{ steps.deploy-to-staging.outputs.webapp-url }}/health || exit 1
-        echo "Staging deployment verified successfully!"
-
   deploy-production:
     name: Deploy to Production
-    needs: deploy-staging
+    needs: build-and-test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     environment:

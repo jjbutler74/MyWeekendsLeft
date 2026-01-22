@@ -106,54 +106,6 @@ resource "azurerm_windows_web_app" "main" {
   tags = azurerm_resource_group.main.tags
 }
 
-# App Service Staging Slot
-resource "azurerm_windows_web_app_slot" "staging" {
-  name           = "staging"
-  app_service_id = azurerm_windows_web_app.main.id
-  https_only     = true
-
-  site_config {
-    always_on                          = true
-    http2_enabled                      = true
-    minimum_tls_version                = "1.2"
-    ftps_state                         = "FtpsOnly"
-    health_check_path                  = "/health"
-    health_check_eviction_time_in_min = 2
-
-    application_stack {
-      current_stack  = "dotnet"
-      dotnet_version = "v9.0"
-    }
-
-    cors {
-      allowed_origins = ["*"]
-    }
-  }
-
-  app_settings = {
-    "APPINSIGHTS_INSTRUMENTATIONKEY"             = azurerm_application_insights.main.instrumentation_key
-    "APPLICATIONINSIGHTS_CONNECTION_STRING"      = azurerm_application_insights.main.connection_string
-    "ApplicationInsightsAgent_EXTENSION_VERSION" = "~3"
-    "ASPNETCORE_ENVIRONMENT"                     = "Staging"
-    "MwlConfiguration__LifeExpectancyApiUri"     = "https://d6wn6bmjj722w.population.io/1.0/life-expectancy/remaining"
-  }
-
-  logs {
-    application_logs {
-      file_system_level = "Information"
-    }
-
-    http_logs {
-      file_system {
-        retention_in_days = 7
-        retention_in_mb   = 35
-      }
-    }
-  }
-
-  tags = azurerm_resource_group.main.tags
-}
-
 # Auto-healing rules
 resource "azurerm_windows_web_app" "auto_heal" {
   count               = 0 # Set to 1 to enable auto-healing

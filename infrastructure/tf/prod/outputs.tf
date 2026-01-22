@@ -23,11 +23,6 @@ output "app_service_default_hostname" {
   value       = "https://${azurerm_windows_web_app.main.default_hostname}"
 }
 
-output "staging_slot_hostname" {
-  description = "The hostname of the staging slot"
-  value       = "https://${azurerm_windows_web_app_slot.staging.default_hostname}"
-}
-
 output "instrumentation_key" {
   description = "Application Insights instrumentation key"
   value       = azurerm_application_insights.main.instrumentation_key
