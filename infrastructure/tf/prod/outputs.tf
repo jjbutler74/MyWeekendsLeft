@@ -1,27 +1,46 @@
 output "resource_group_name" {
-  value = "${azurerm_resource_group.main.name}"
+  description = "The name of the resource group"
+  value       = azurerm_resource_group.main.name
 }
 
 output "location" {
-  value = "${var.location}"
+  description = "The Azure region location"
+  value       = var.location
 }
 
 output "environment" {
-  value = "${var.environment}"
+  description = "The environment name"
+  value       = var.environment
 }
 
 output "app_service_name" {
-  value = "${azurerm_app_service.main.name}"
+  description = "The name of the App Service"
+  value       = azurerm_windows_web_app.main.name
 }
 
 output "app_service_default_hostname" {
-  value = "https://${azurerm_app_service.main.default_site_hostname}"
+  description = "The default hostname of the App Service"
+  value       = "https://${azurerm_windows_web_app.main.default_hostname}"
+}
+
+output "staging_slot_hostname" {
+  description = "The hostname of the staging slot"
+  value       = "https://${azurerm_windows_web_app_slot.staging.default_hostname}"
 }
 
 output "instrumentation_key" {
-  value = azurerm_application_insights.main.instrumentation_key
+  description = "Application Insights instrumentation key"
+  value       = azurerm_application_insights.main.instrumentation_key
+  sensitive   = true
+}
+
+output "app_insights_connection_string" {
+  description = "Application Insights connection string"
+  value       = azurerm_application_insights.main.connection_string
+  sensitive   = true
 }
 
 output "app_id" {
-  value = azurerm_application_insights.main.app_id
+  description = "Application Insights App ID"
+  value       = azurerm_application_insights.main.app_id
 }

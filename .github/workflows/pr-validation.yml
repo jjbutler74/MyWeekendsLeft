@@ -1,0 +1,62 @@
+name: Pull Request Validation
+
+on:
+  pull_request:
+    branches: [ main ]
+    types: [ opened, synchronize, reopened ]
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  WORKING_DIRECTORY: 'api/MWL'
+
+jobs:
+  validate:
+    name: Build and Test PR
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Restore dependencies
+      run: dotnet restore ${{ env.WORKING_DIRECTORY }}/MWL.sln
+
+    - name: Build
+      run: dotnet build ${{ env.WORKING_DIRECTORY }}/MWL.sln --configuration Release --no-restore
+
+    - name: Run All Tests
+      run: |
+        dotnet test ${{ env.WORKING_DIRECTORY }}/MWL.sln \
+          --configuration Release \
+          --no-build \
+          --logger "trx;LogFileName=test-results.trx" \
+          --collect:"XPlat Code Coverage" \
+          --results-directory ./test-results
+
+    - name: Publish Test Results
+      uses: dorny/test-reporter@v1
+      if: always()
+      with:
+        name: PR Test Results
+        path: 'test-results/**/*.trx'
+        reporter: dotnet-trx
+        fail-on-error: true
+
+    - name: Comment Test Summary on PR
+      uses: actions/github-script@v7
+      if: always()
+      with:
+        script: |
+          const fs = require('fs');
+          const testResults = fs.existsSync('./test-results') ? '✅ Tests passed' : '❌ Tests failed';
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: `## Test Results\n\n${testResults}\n\nView details in the Actions tab.`
+          });
