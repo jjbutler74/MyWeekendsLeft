@@ -7,17 +7,35 @@ This directory contains the infrastructure-as-code and deployment configuration 
 ### GitHub Actions CI/CD
 - **Location**: `.github/workflows/`
 - **Pipelines**:
-  - `build-and-deploy.yml` - Main deployment pipeline
+  - `build-and-deploy.yml` - Main deployment pipeline (DEV & UAT)
   - `pr-validation.yml` - Pull request validation
 
 ### Terraform
-- **Location**: `infrastructure/tf/prod/`
+- **Location**: `infrastructure/tf/`
 - **Provider**: Azure (AzureRM v3.x)
-- **Resources**:
+- **Environments**:
+  - `tf/dev/` - DEV environment configuration
+  - `tf/uat/` - UAT environment configuration
+- **Resources** (per environment):
   - App Service Plan (S1, Windows)
-  - App Service (Production)
+  - App Service
   - Application Insights
-  - Resource Group
+
+---
+
+## 🌍 Environments
+
+| Environment | Resource Group | App Service | URL |
+|-------------|---------------|-------------|-----|
+| **DEV** | `dev` | `dev-myweekendsleft-api` | https://dev-myweekendsleft-api.azurewebsites.net |
+| **UAT** | `uat` | `uat-myweekendsleft-api` | https://uat-myweekendsleft-api.azurewebsites.net |
+
+### Deployment Triggers
+
+| Branch | Deploys To |
+|--------|-----------|
+| `develop` | DEV |
+| `main` | UAT |
 
 ---
 
@@ -25,69 +43,51 @@ This directory contains the infrastructure-as-code and deployment configuration 
 
 ### Prerequisites
 
-1. **Azure Resources** (via Terraform)
-2. **GitHub Secrets** configured
-3. **.NET 9 SDK** (for local development)
+1. **Azure Resources** - Existing App Services in Azure
+2. **GitHub Secrets** - Publish profiles configured
+3. **.NET 10 SDK** - For local development
 
-### 1. Deploy Infrastructure with Terraform
+### 1. Configure GitHub Secrets
+
+You need to add two secrets to your GitHub repository:
+
+#### Get Publish Profiles from Azure
 
 ```bash
-cd infrastructure/tf/prod
-
-# Initialize Terraform
-terraform init
-
-# Review the planned changes
-terraform plan -var="environment=prod"
-
-# Apply the configuration
-terraform apply -var="environment=prod"
-```
-
-**Important Outputs:**
-- `app_service_name` - Your Azure App Service name
-- `app_service_default_hostname` - Production URL
-
-### 2. Configure GitHub Secrets
-
-You need to add one secret to your GitHub repository:
-
-#### Get Publish Profile from Azure
-
-**For Production:**
-```bash
+# DEV publish profile
 az webapp deployment list-publishing-profiles \
-  --name app-mwl-prod-001 \
-  --resource-group rg-mwl-prod-001 \
-  --xml > production-profile.xml
+  --name dev-myweekendsleft-api \
+  --resource-group dev \
+  --xml
+
+# UAT publish profile
+az webapp deployment list-publishing-profiles \
+  --name uat-myweekendsleft-api \
+  --resource-group uat \
+  --xml
 ```
 
-#### Add Secret to GitHub
+#### Add Secrets to GitHub
 
 1. Go to your repository on GitHub
 2. Navigate to **Settings** → **Secrets and variables** → **Actions**
 3. Click **New repository secret**
 4. Add the following secrets:
 
-| Secret Name | Value | Source |
-|------------|-------|--------|
-| `AZURE_WEBAPP_PUBLISH_PROFILE` | Contents of `production-profile.xml` | Production profile |
-| `AZURE_WEBAPP_PUBLISH_PROFILE_STAGING` | Contents of `staging-profile.xml` | Staging profile |
+| Secret Name | Value | Environment |
+|------------|-------|-------------|
+| `AZURE_WEBAPP_PUBLISH_PROFILE_DEV` | DEV publish profile XML | DEV |
+| `AZURE_WEBAPP_PUBLISH_PROFILE_UAT` | UAT publish profile XML | UAT |
 
-**Delete the XML files after adding secrets:**
-```bash
-rm production-profile.xml staging-profile.xml
-```
+### 2. Configure GitHub Environments (Optional but Recommended)
 
-### 3. Configure GitHub Environments (Optional but Recommended)
-
-For production approvals and protection:
+For environment approvals and protection:
 
 1. Go to **Settings** → **Environments**
-2. Create a **Production** environment
-3. Configure the Production environment:
-   - Add required reviewers (yourself or team members)
-   - Set deployment branch policy to `main` only
+2. Create **DEV** and **UAT** environments
+3. Configure each environment:
+   - Add required reviewers (for UAT)
+   - Set deployment branch policies
    - Add environment secrets if needed
 
 ---
@@ -97,7 +97,8 @@ For production approvals and protection:
 ### Workflow Triggers
 
 **Main Deployment Pipeline** (`build-and-deploy.yml`):
-- ✅ Push to `main` branch → Full deployment
+- ✅ Push to `develop` branch → Deploy to DEV
+- ✅ Push to `main` branch → Deploy to UAT
 - ✅ Pull requests → Build and test only
 - ✅ Manual trigger via workflow_dispatch
 
@@ -109,10 +110,13 @@ For production approvals and protection:
 ```mermaid
 graph LR
     A[Build & Test] --> B{Tests Pass?}
-    B -->|Yes| C[Deploy to Production]
-    B -->|No| D[❌ Fail]
-    C --> E[Verify Production]
-    E --> F[✅ Complete]
+    B -->|Yes, develop| C[Deploy to DEV]
+    B -->|Yes, main| D[Deploy to UAT]
+    B -->|No| E[❌ Fail]
+    C --> F[Verify DEV]
+    D --> G[Verify UAT]
+    F --> H[✅ Complete]
+    G --> H
 ```
 
 ### Test Execution
@@ -123,39 +127,46 @@ The pipeline runs **39 tests** in three categories:
 2. **Integration Tests** (3 tests) - Service integration with external APIs
 3. **API Integration Tests** (25 tests) - Full HTTP pipeline testing
 
-### Deployment Flow
+### Build Versioning
 
-1. **Build**
-   - Restore dependencies
-   - Build solution in Release mode
-   - Run all tests with code coverage
+The build number is automatically set based on the GitHub run number:
+- Format: `1.0.{run_number}`
+- Example: `1.0.15`, `1.0.16`, `1.0.17`
 
-2. **Deploy to Production**
-   - Publish application
-   - Deploy to production App Service
-   - Verify `/health` endpoint
+The `/api/version` endpoint returns:
+```json
+{
+  "build": "1.0.15",
+  "environment": "DEV",
+  "runtime": ".NET 10.0.x",
+  "serverDatetime": "..."
+}
+```
 
 ---
 
 ## 🔧 Terraform Configuration
 
-### Resource Naming Convention
+### Directory Structure
 
-All resources follow Azure naming best practices:
-
-| Resource Type | Pattern | Example |
-|--------------|---------|---------|
-| Resource Group | `rg-{app}-{env}-{instance}` | `rg-mwl-prod-001` |
-| App Service Plan | `plan-{app}-{env}-{instance}` | `plan-mwl-prod-001` |
-| App Service | `app-{app}-{env}-{instance}` | `app-mwl-prod-001` |
-| App Insights | `appi-{app}-{env}-{instance}` | `appi-mwl-prod-001` |
+```
+infrastructure/tf/
+├── dev/
+│   ├── main.tf
+│   ├── variables.tf
+│   └── outputs.tf
+└── uat/
+    ├── main.tf
+    ├── variables.tf
+    └── outputs.tf
+```
 
 ### Key Features Configured
 
 ✅ **Health Checks**: `/health` endpoint monitored every 2 minutes
 ✅ **HTTPS Only**: All traffic forced to HTTPS
 ✅ **TLS 1.2 Minimum**: Secure communications enforced
-✅ **.NET 9**: Latest framework configured
+✅ **.NET 10 LTS**: Latest LTS framework (supported until Nov 2028)
 ✅ **Application Insights**: Full telemetry and monitoring
 ✅ **CORS**: Configured to allow all origins (adjust as needed)
 ✅ **HTTP/2**: Enabled for better performance
@@ -164,25 +175,34 @@ All resources follow Azure naming best practices:
 
 ### Variables
 
-Defined in `variables.tf`:
+Defined in `variables.tf` for each environment:
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `environment` | Environment name | (required) |
-| `location` | Azure region | `australiasoutheast` |
+| Variable | DEV Default | UAT Default |
+|----------|-------------|-------------|
+| `environment` | `dev` | `uat` |
+| `resource_group_name` | `dev` | `uat` |
+| `app_service_name` | `dev-myweekendsleft-api` | `uat-myweekendsleft-api` |
+| `location` | `australiasoutheast` | `australiasoutheast` |
 
 ### Outputs
 
 After `terraform apply`, you'll get:
-
 - Resource group name
-- App Service URL (production)
+- App Service URL
 - Application Insights keys
 - App ID
 
 ---
 
 ## 🔒 Security Considerations
+
+### Current Security Measures
+
+✅ Secrets stored in GitHub Secrets (encrypted)
+✅ Publish profiles used for deployment (time-limited)
+✅ HTTPS enforced on all endpoints
+✅ TLS 1.2 minimum
+✅ Application Insights keys marked as sensitive in Terraform
 
 ### ⚠️ IMPORTANT: Old Credentials Removed
 
@@ -192,14 +212,6 @@ The old PowerShell script with hardcoded Azure Storage credentials has been **pe
 1. ✅ Credentials removed from this repository
 2. ⚠️ **You should rotate the storage account key** in Azure Portal
 3. ⚠️ **Review git history** if credentials need to be purged
-
-### Current Security Measures
-
-✅ Secrets stored in GitHub Secrets (encrypted)
-✅ Publish profiles used for deployment (time-limited)
-✅ HTTPS enforced on all endpoints
-✅ TLS 1.2 minimum
-✅ Application Insights keys marked as sensitive in Terraform
 
 ---
 
@@ -223,17 +235,20 @@ dotnet test --configuration Release --filter "Category=API-Integration"
 dotnet test --configuration Release
 ```
 
+**Note**: Requires .NET 10 SDK installed locally.
+
 ---
 
 ## 📈 Monitoring
 
 ### Application Insights
 
-Access Application Insights in Azure Portal:
-```
-Resource Group: rg-mwl-prod-001
-Resource: appi-mwl-prod-001
-```
+Access Application Insights in Azure Portal for each environment:
+
+| Environment | Resource |
+|-------------|----------|
+| DEV | `dev-myweekendsleft-api-insights` |
+| UAT | `uat-myweekendsleft-api-insights` |
 
 **Key Metrics to Monitor:**
 - Request rate and response times
@@ -242,12 +257,13 @@ Resource: appi-mwl-prod-001
 - Dependency calls (to population.io API)
 - Availability (via health check)
 
-### Health Check Endpoint
+### Health Check Endpoints
 
-Both production and staging monitor the `/health` endpoint:
-- **URL**: `https://app-mwl-prod-001.azurewebsites.net/health`
-- **Staging**: `https://app-mwl-prod-001-staging.azurewebsites.net/health`
-- **Expected Response**: `200 OK` with body `"Healthy"`
+| Environment | URL | Expected |
+|-------------|-----|----------|
+| DEV | https://dev-myweekendsleft-api.azurewebsites.net/health | `Healthy` |
+| UAT | https://uat-myweekendsleft-api.azurewebsites.net/health | `Healthy` |
+
 - **Check Interval**: Every 2 minutes
 - **Eviction Time**: 2 minutes (app restarted if unhealthy)
 
@@ -276,14 +292,17 @@ Both production and staging monitor the `/health` endpoint:
 
 **Quick Commands:**
 ```bash
-# Restart app service
-az webapp restart --name app-mwl-prod-001 --resource-group rg-mwl-prod-001
+# Restart DEV app service
+az webapp restart --name dev-myweekendsleft-api --resource-group dev
 
-# View recent logs
-az webapp log tail --name app-mwl-prod-001 --resource-group rg-mwl-prod-001
+# View DEV logs
+az webapp log tail --name dev-myweekendsleft-api --resource-group dev
 
-# Check health
-curl https://app-mwl-prod-001.azurewebsites.net/health
+# Check DEV health
+curl https://dev-myweekendsleft-api.azurewebsites.net/health
+
+# Check UAT health
+curl https://uat-myweekendsleft-api.azurewebsites.net/health
 ```
 
 ---
@@ -293,16 +312,16 @@ curl https://app-mwl-prod-001.azurewebsites.net/health
 ### Update Terraform
 
 ```bash
-cd infrastructure/tf/prod
+cd infrastructure/tf/dev  # or uat
 
 # Update providers
 terraform init -upgrade
 
 # Review changes
-terraform plan -var="environment=prod"
+terraform plan
 
 # Apply if safe
-terraform apply -var="environment=prod"
+terraform apply
 ```
 
 ### Rotate Publish Profiles
@@ -310,27 +329,20 @@ terraform apply -var="environment=prod"
 Publish profiles should be rotated periodically (recommended: every 90 days):
 
 ```bash
-# Regenerate profiles
+# Regenerate DEV profile
 az webapp deployment list-publishing-profiles \
-  --name app-mwl-prod-001 \
-  --resource-group rg-mwl-prod-001 \
+  --name dev-myweekendsleft-api \
+  --resource-group dev \
+  --xml
+
+# Regenerate UAT profile
+az webapp deployment list-publishing-profiles \
+  --name uat-myweekendsleft-api \
+  --resource-group uat \
   --xml
 
 # Update GitHub secrets with new profiles
 ```
-
-### Scale App Service
-
-To change the App Service plan tier:
-
-1. Edit `infrastructure/tf/prod/main.tf`
-2. Change `sku_name` in `azurerm_service_plan` resource
-3. Run `terraform apply -var="environment=prod"`
-
-**Available SKUs:**
-- `B1` - Basic (dev/test)
-- `S1` - Standard (current, recommended)
-- `P1V2` - Premium (production scale)
 
 ---
 
@@ -342,13 +354,9 @@ To change the App Service plan tier:
 - ✅ GitHub Actions workflows created
 - ✅ Old Azure Pipelines YAML removed
 - ✅ Deployment configured with secrets
-- ✅ Multi-stage pipeline (staging → production)
+- ✅ DEV and UAT environments configured
 - ✅ Test execution fixed (was broken in Azure DevOps)
-
-**Manual Steps Required:**
-1. Configure GitHub Secrets (see section above)
-2. Verify first deployment succeeds
-3. (Optional) Remove Azure DevOps project if no longer needed
+- ✅ Build versioning implemented
 
 ### Terraform Modernization
 
@@ -358,8 +366,9 @@ To change the App Service plan tier:
 - ✅ Added health check configuration
 - ✅ Added resource tagging
 - ✅ Fixed interpolation syntax
-- ✅ Added .NET 9 configuration
+- ✅ Added .NET 10 configuration
 - ✅ Removed hardcoded values
+- ✅ Split into DEV and UAT configs
 
 ---
 
@@ -376,4 +385,4 @@ For issues or questions:
 **Last Updated**: January 2026
 **Terraform Version**: >= 1.0
 **AzureRM Provider**: ~> 3.0
-**.NET Version**: 9.0
+**.NET Version**: 10.0 LTS
