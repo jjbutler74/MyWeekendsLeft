@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net.Http;
-using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
@@ -56,8 +55,12 @@ namespace MWL.Services.Implementation
 
                 var response = await _httpClient.GetStringAsync(fullUrl);
 
-                var responseDeserialize = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(response);
-                var remainingLife = (double)responseDeserialize.remaining_life_expectancy;
+                var apiResponse = JsonSerializer.Deserialize<LifeExpectancyApiResponse>(response);
+                if (apiResponse == null)
+                {
+                    throw new InvalidOperationException("Life expectancy API returned null response.");
+                }
+                var remainingLife = apiResponse.RemainingLifeExpectancy;
 
                 // Cache the result for 24 hours
                 var cacheOptions = new MemoryCacheEntryOptions()
