@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using MWL.API.Middleware;
 using MWL.Services.Implementation;
 using MWL.Services.Interface;
 using Polly;
@@ -44,12 +45,15 @@ namespace MWL.API
                 options.EnableForHttps = true;
             });
 
-            // Add CORS policy
+            // Add CORS policy with specific origins
+            var allowedOrigins = Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+                ?? new[] { "https://localhost:3000", "https://localhost:5001" };
+
             services.AddCors(options =>
             {
                 options.AddDefaultPolicy(builder =>
                 {
-                    builder.AllowAnyOrigin()
+                    builder.WithOrigins(allowedOrigins)
                            .AllowAnyMethod()
                            .AllowAnyHeader();
                 });
@@ -94,6 +98,9 @@ namespace MWL.API
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            // Add security headers to all responses
+            app.UseMiddleware<SecurityHeadersMiddleware>();
 
             // Enable response compression
             app.UseResponseCompression();
