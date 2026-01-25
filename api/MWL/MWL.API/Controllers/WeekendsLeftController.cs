@@ -10,8 +10,12 @@ using MWL.Models.Entities;
 
 namespace MWL.API.Controllers
 {
+    /// <summary>
+    /// API controller for calculating remaining weekends in a person's life.
+    /// </summary>
     [ApiController]
     [Route("api")]
+    [Produces("application/json")]
     public class WeekendsLeftController : ControllerBase
     {
         private readonly ILogger<WeekendsLeftController> _logger;
@@ -22,7 +26,17 @@ namespace MWL.API.Controllers
             _logger = logger;
             _weekendsLeftService = weekendsLeftService;
         }
-        
+
+        /// <summary>
+        /// Calculate the estimated number of weekends remaining in a person's life.
+        /// </summary>
+        /// <param name="age">The person's current age (1-120).</param>
+        /// <param name="gender">The person's gender (Male or Female).</param>
+        /// <param name="country">The ISO 3166-1 alpha-3 country code (e.g., USA, GBR, NZL).</param>
+        /// <returns>An estimate of remaining weekends, age of death, and a motivational message.</returns>
+        /// <response code="200">Returns the weekends calculation result.</response>
+        /// <response code="400">If the request parameters are invalid.</response>
+        /// <response code="503">If the external life expectancy service is unavailable.</response>
         [HttpGet]
         [ApiVersion("1.0")]
         [Route("getweekends/")]
@@ -93,9 +107,14 @@ namespace MWL.API.Controllers
             }
         }
 
+        /// <summary>
+        /// Get the current API version and build information.
+        /// </summary>
+        /// <returns>Version information including build number and environment.</returns>
         [HttpGet]
         [ApiVersion("1.0")]
         [Route("version/")]
+        [ProducesResponseType(typeof(VersionInfo), 200)]
         public VersionInfo Version()
         {
             var ver = _weekendsLeftService.GetVersion();

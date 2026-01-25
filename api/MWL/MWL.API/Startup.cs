@@ -1,7 +1,10 @@
 using System;
+using System.IO;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading.Tasks;
 using Asp.Versioning;
+using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -33,11 +36,16 @@ namespace MWL.API
             // Validate critical configuration at startup
             ValidateConfiguration();
 
+            // Configure rate limiting
+            services.AddMemoryCache();
+            services.Configure<IpRateLimitOptions>(Configuration.GetSection("IpRateLimiting"));
+            services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+            services.AddInMemoryRateLimiting();
+
             services.AddControllers();
             services.AddScoped<IWeekendsLeftService, WeekendsLeftService>();
             services.AddScoped<ICountriesService, CountriesService>();
             services.AddScoped<ILifeExpectancyService, LifeExpectancyService>();
-            services.AddMemoryCache();
 
             // Add response compression (gzip and brotli)
             services.AddResponseCompression(options =>
@@ -88,6 +96,14 @@ namespace MWL.API
                 options =>
                 {
                     options.OperationFilter<SwaggerDefaultValues>(); // add a custom operation filter which sets default values
+
+                    // Include XML comments for API documentation
+                    var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFilename);
+                    if (File.Exists(xmlPath))
+                    {
+                        options.IncludeXmlComments(xmlPath);
+                    }
                 });
         }
 
@@ -101,6 +117,9 @@ namespace MWL.API
 
             // Add security headers to all responses
             app.UseMiddleware<SecurityHeadersMiddleware>();
+
+            // Enable rate limiting
+            app.UseIpRateLimiting();
 
             // Enable response compression
             app.UseResponseCompression();
