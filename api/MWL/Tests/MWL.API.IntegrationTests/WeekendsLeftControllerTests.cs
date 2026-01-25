@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
@@ -250,6 +251,38 @@ namespace MWL.API.IntegrationTests
             Assert.NotEqual(default(DateTime), result.EstimatedDayOfDeath);
             Assert.NotNull(result.Message);
             Assert.Contains("weekends", result.Message.ToLower());
+        }
+
+        [Fact]
+        [Trait("Category", "API-Integration")]
+        public async Task Response_ContainsSecurityHeaders()
+        {
+            // Act
+            var response = await _client.GetAsync("/api/version/");
+
+            // Assert - verify security headers are present
+            Assert.True(response.Headers.Contains("X-Frame-Options"), "X-Frame-Options header should be present");
+            Assert.True(response.Headers.Contains("X-Content-Type-Options"), "X-Content-Type-Options header should be present");
+            Assert.True(response.Headers.Contains("X-XSS-Protection"), "X-XSS-Protection header should be present");
+            Assert.True(response.Headers.Contains("Referrer-Policy"), "Referrer-Policy header should be present");
+
+            // Verify header values
+            Assert.Equal("DENY", response.Headers.GetValues("X-Frame-Options").First());
+            Assert.Equal("nosniff", response.Headers.GetValues("X-Content-Type-Options").First());
+        }
+
+        [Fact]
+        [Trait("Category", "API-Integration")]
+        public async Task Response_ContainsContentSecurityPolicy()
+        {
+            // Act
+            var response = await _client.GetAsync("/api/version/");
+
+            // Assert - CSP is typically in Content headers, not response headers
+            var hasCSP = response.Headers.Contains("Content-Security-Policy") ||
+                        response.Content.Headers.Contains("Content-Security-Policy");
+
+            Assert.True(hasCSP, "Content-Security-Policy header should be present");
         }
     }
 }

@@ -1,4 +1,7 @@
 # MyWeekendsLeft
+
+[![Build and Deploy](https://github.com/jjbutler74/MyWeekendsLeft/actions/workflows/build-and-deploy.yml/badge.svg)](https://github.com/jjbutler74/MyWeekendsLeft/actions/workflows/build-and-deploy.yml)
+
 A service to inspire people to get busy living!
 
 This project now targets **.NET 10**.
