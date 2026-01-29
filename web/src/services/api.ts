@@ -1,6 +1,8 @@
 import { WeekendsLeftRequest, WeekendsLeftResponse, ApiError } from '../types/api';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://dev-myweekendsleft-api.azurewebsites.net';
+// In development, use empty string to leverage Vite's proxy (avoids CORS issues)
+// In production, use the configured API URL
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 export class ApiException extends Error {
   constructor(
