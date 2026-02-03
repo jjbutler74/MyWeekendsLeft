@@ -209,6 +209,13 @@ jobs:
       env:
         VITE_API_URL: https://dev-myweekendsleft-api.azurewebsites.net
 
+    - name: Prepare DEV deployment package
+      run: |
+        cp server.cjs dist/
+        cp package.json dist/
+        cd dist && npm install --omit=dev
+      working-directory: ${{ env.WEB_WORKING_DIRECTORY }}
+
     - name: Upload DEV artifact
       uses: actions/upload-artifact@v4
       with:
@@ -221,6 +228,13 @@ jobs:
       working-directory: ${{ env.WEB_WORKING_DIRECTORY }}
       env:
         VITE_API_URL: https://uat-myweekendsleft-api.azurewebsites.net
+
+    - name: Prepare UAT deployment package
+      run: |
+        cp server.cjs dist/
+        cp package.json dist/
+        cd dist && npm install --omit=dev
+      working-directory: ${{ env.WEB_WORKING_DIRECTORY }}
 
     - name: Upload UAT artifact
       uses: actions/upload-artifact@v4
