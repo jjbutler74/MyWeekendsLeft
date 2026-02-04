@@ -1,5 +1,63 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { WeekendsLeftResponse } from '../types/api';
+
+const ALL_TIPS = [
+  "Try something new every month",
+  "Spend quality time with loved ones",
+  "Take that trip you've been postponing",
+  "Disconnect from screens and connect with nature",
+  "Learn a new skill or hobby",
+  "Have breakfast in bed on Sunday",
+  "Watch the sunrise at least once a month",
+  "Call someone you haven't spoken to in years",
+  "Start a passion project",
+  "Go on a spontaneous road trip",
+  "Have a picnic in the park",
+  "Learn to cook a dish from another culture",
+  "Write a letter to your future self",
+  "Visit a place you've never been in your own city",
+  "Take a digital detox weekend",
+  "Volunteer for a cause you care about",
+  "Host a game night with friends",
+  "Watch the sunset with someone you love",
+  "Try a new restaurant every month",
+  "Go stargazing away from city lights",
+  "Take up gardening or grow your own herbs",
+  "Read a book in one sitting",
+  "Have a movie marathon of classics you've missed",
+  "Go camping under the stars",
+  "Learn to play a musical instrument",
+  "Take a dance class",
+  "Visit a farmers market",
+  "Go hiking on a trail you've never explored",
+  "Have a spa day at home",
+  "Write down 3 things you're grateful for",
+  "Reconnect with an old friend over coffee",
+  "Try meditation or yoga",
+  "Create art, even if you think you can't",
+  "Build something with your hands",
+  "Teach someone something you know well",
+  "Say yes to an invitation you'd normally decline",
+  "Take photos of moments, not just places",
+  "Have a tech-free dinner with family",
+  "Go to a live concert or performance",
+  "Explore a museum you've never visited",
+  "Plant a tree",
+  "Learn a few phrases in a new language",
+  "Wake up early to enjoy the quiet morning",
+  "Write in a journal about your dreams",
+  "Take the scenic route instead of the fastest",
+  "Forgive someone who wronged you",
+  "Tell people you love them more often",
+  "Make a bucket list and start crossing things off",
+  "Celebrate small wins",
+  "Be present - put your phone away",
+];
+
+function getRandomTips(count: number): string[] {
+  const shuffled = [...ALL_TIPS].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count);
+}
 
 interface ResultsProps {
   data: WeekendsLeftResponse;
@@ -10,6 +68,9 @@ interface ResultsProps {
 export function Results({ data, age, onReset }: ResultsProps) {
   const [displayedCount, setDisplayedCount] = useState(0);
   const [showDetails, setShowDetails] = useState(false);
+
+  // Get 4 random tips (memoized so they don't change on re-render)
+  const randomTips = useMemo(() => getRandomTips(4), []);
 
   // Animate the count up
   useEffect(() => {
@@ -129,22 +190,12 @@ export function Results({ data, age, onReset }: ResultsProps) {
             <span>💡</span> Make your weekends count:
           </h3>
           <ul className="space-y-2 text-gray-700">
-            <li className="flex items-start gap-2">
-              <span className="text-sunset-500">•</span>
-              Try something new every month
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-sunset-500">•</span>
-              Spend quality time with loved ones
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-sunset-500">•</span>
-              Take that trip you've been postponing
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-sunset-500">•</span>
-              Disconnect from screens and connect with nature
-            </li>
+            {randomTips.map((tip, index) => (
+              <li key={index} className="flex items-start gap-2">
+                <span className="text-sunset-500">•</span>
+                {tip}
+              </li>
+            ))}
           </ul>
         </div>
       )}
