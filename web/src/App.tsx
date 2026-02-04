@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Calculator } from './components/Calculator';
 import { Results } from './components/Results';
-import { getWeekendsLeft, ApiException } from './services/api';
+import { getWeekendsLeft, getVersion, ApiException } from './services/api';
 import { WeekendsLeftRequest, WeekendsLeftResponse } from './types/api';
 
 function App() {
@@ -9,6 +9,14 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<WeekendsLeftResponse | null>(null);
   const [lastRequest, setLastRequest] = useState<WeekendsLeftRequest | null>(null);
+  const [apiVersion, setApiVersion] = useState<string | null>(null);
+
+  // Fetch API version on mount
+  useEffect(() => {
+    getVersion()
+      .then((v) => setApiVersion(v.buildNumber))
+      .catch(() => setApiVersion(null));
+  }, []);
 
   const handleCalculate = async (request: WeekendsLeftRequest) => {
     setIsLoading(true);
@@ -102,6 +110,7 @@ function App() {
             population.io
           </a>
           {' '}• Built with ❤️ to inspire you
+          {apiVersion && <span> • API v{apiVersion}</span>}
         </p>
       </footer>
     </div>
