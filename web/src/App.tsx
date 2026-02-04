@@ -14,7 +14,7 @@ function App() {
   // Fetch API version on mount
   useEffect(() => {
     getVersion()
-      .then((v) => setApiVersion(v.buildNumber))
+      .then((v) => setApiVersion(v.build))
       .catch(() => setApiVersion(null));
   }, []);
 
