@@ -1,4 +1,4 @@
-import { WeekendsLeftRequest, WeekendsLeftResponse, ApiError } from '../types/api';
+import { WeekendsLeftRequest, WeekendsLeftResponse, ApiError, VersionInfo } from '../types/api';
 
 // In development, use empty string to leverage Vite's proxy (avoids CORS issues)
 // In production, use the configured API URL
@@ -41,7 +41,7 @@ export async function getWeekendsLeft(request: WeekendsLeftRequest): Promise<Wee
   return response.json();
 }
 
-export async function getVersion(): Promise<{ buildNumber: string; environment: string }> {
+export async function getVersion(): Promise<VersionInfo> {
   const response = await fetch(`${API_BASE_URL}/api/version`, {
     method: 'GET',
     headers: {

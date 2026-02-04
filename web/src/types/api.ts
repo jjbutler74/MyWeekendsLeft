@@ -13,8 +13,10 @@ export interface WeekendsLeftResponse {
 }
 
 export interface VersionInfo {
-  buildNumber: string;
+  build: string;
   environment: string;
+  runtime: string;
+  serverDatetime: string;
 }
 
 export interface ApiError {
