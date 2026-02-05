@@ -8,6 +8,11 @@ body {
   min-height: 100vh;
 }
 
+.dark body,
+html.dark body {
+  background-color: #111827;
+}
+
 /* Custom number input styling */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
