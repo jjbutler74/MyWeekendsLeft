@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
 import { ErrorBoundary } from '../ErrorBoundary';
 
-function ThrowingComponent() {
+function ThrowingComponent(): JSX.Element {
   throw new Error('Test error');
 }
 
