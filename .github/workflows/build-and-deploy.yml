@@ -91,6 +91,27 @@ jobs:
         reporter: dotnet-trx
         fail-on-error: true
 
+    - name: Generate .NET Code Coverage Report
+      uses: danielpalme/ReportGenerator-GitHub-Action@5
+      with:
+        reports: 'test-results/**/coverage.cobertura.xml'
+        targetdir: 'coverage-report'
+        reporttypes: 'HtmlInline_AzurePipelines;Cobertura;MarkdownSummaryGithub'
+
+    - name: Upload .NET Coverage Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: dotnet-coverage-report
+        path: coverage-report
+        retention-days: 7
+
+    - name: Add .NET Coverage to Job Summary
+      run: |
+        if [ -f "coverage-report/SummaryGithub.md" ]; then
+          echo "## .NET Code Coverage" >> $GITHUB_STEP_SUMMARY
+          cat coverage-report/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
+        fi
+
     - name: Publish Application
       run: |
         dotnet publish ${{ env.WORKING_DIRECTORY }}/MWL.API/MWL.API.csproj \
@@ -203,9 +224,33 @@ jobs:
       run: npm ci
       working-directory: ${{ env.WEB_WORKING_DIRECTORY }}
 
-    - name: Run Frontend Tests
-      run: npx vitest run
+    - name: Run Frontend Tests with Coverage
+      run: npx vitest run --coverage
       working-directory: ${{ env.WEB_WORKING_DIRECTORY }}
+
+    - name: Upload Frontend Coverage Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: frontend-coverage-report
+        path: ${{ env.WEB_WORKING_DIRECTORY }}/coverage
+        retention-days: 7
+
+    - name: Add Frontend Coverage to Job Summary
+      run: |
+        if [ -f "${{ env.WEB_WORKING_DIRECTORY }}/coverage/coverage-summary.json" ]; then
+          echo "## Frontend Code Coverage" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          node -e "
+            const cov = require('./${{ env.WEB_WORKING_DIRECTORY }}/coverage/coverage-summary.json');
+            const t = cov.total;
+            console.log('| Metric | Coverage |');
+            console.log('|--------|----------|');
+            console.log('| Lines | ' + t.lines.pct + '% |');
+            console.log('| Statements | ' + t.statements.pct + '% |');
+            console.log('| Functions | ' + t.functions.pct + '% |');
+            console.log('| Branches | ' + t.branches.pct + '% |');
+          " >> $GITHUB_STEP_SUMMARY
+        fi
 
     - name: Build for DEV
       run: npm run build
