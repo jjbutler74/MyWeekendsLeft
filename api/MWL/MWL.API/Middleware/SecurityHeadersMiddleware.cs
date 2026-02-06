@@ -32,9 +32,17 @@ namespace MWL.API.Middleware
             // Content Security Policy - restrict resource loading
             context.Response.Headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; frame-ancestors 'none'";
 
-            // Prevent caching of sensitive data
-            context.Response.Headers["Cache-Control"] = "no-store, no-cache, must-revalidate";
-            context.Response.Headers["Pragma"] = "no-cache";
+            // Allow caching for read-only API endpoints, prevent caching for others
+            var path = context.Request.Path.Value?.ToLowerInvariant() ?? "";
+            var isCacheableEndpoint = context.Request.Method == "GET" &&
+                (path.Contains("/api/getweekends") || path.Contains("/api/version"));
+
+            if (!isCacheableEndpoint)
+            {
+                // Prevent caching of sensitive data
+                context.Response.Headers["Cache-Control"] = "no-store, no-cache, must-revalidate";
+                context.Response.Headers["Pragma"] = "no-cache";
+            }
 
             await _next(context);
         }

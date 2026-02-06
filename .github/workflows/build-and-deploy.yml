@@ -91,6 +91,27 @@ jobs:
         reporter: dotnet-trx
         fail-on-error: true
 
+    - name: Generate .NET Code Coverage Report
+      uses: danielpalme/ReportGenerator-GitHub-Action@5
+      with:
+        reports: 'test-results/**/coverage.cobertura.xml'
+        targetdir: 'coverage-report'
+        reporttypes: 'HtmlInline_AzurePipelines;Cobertura;MarkdownSummaryGithub'
+
+    - name: Upload .NET Coverage Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: dotnet-coverage-report
+        path: coverage-report
+        retention-days: 7
+
+    - name: Add .NET Coverage to Job Summary
+      run: |
+        if [ -f "coverage-report/SummaryGithub.md" ]; then
+          echo "## .NET Code Coverage" >> $GITHUB_STEP_SUMMARY
+          cat coverage-report/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
+        fi
+
     - name: Publish Application
       run: |
         dotnet publish ${{ env.WORKING_DIRECTORY }}/MWL.API/MWL.API.csproj \
@@ -203,6 +224,34 @@ jobs:
       run: npm ci
       working-directory: ${{ env.WEB_WORKING_DIRECTORY }}
 
+    - name: Run Frontend Tests with Coverage
+      run: npx vitest run --coverage
+      working-directory: ${{ env.WEB_WORKING_DIRECTORY }}
+
+    - name: Upload Frontend Coverage Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: frontend-coverage-report
+        path: ${{ env.WEB_WORKING_DIRECTORY }}/coverage
+        retention-days: 7
+
+    - name: Add Frontend Coverage to Job Summary
+      run: |
+        if [ -f "${{ env.WEB_WORKING_DIRECTORY }}/coverage/coverage-summary.json" ]; then
+          echo "## Frontend Code Coverage" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          node -e "
+            const cov = require('./${{ env.WEB_WORKING_DIRECTORY }}/coverage/coverage-summary.json');
+            const t = cov.total;
+            console.log('| Metric | Coverage |');
+            console.log('|--------|----------|');
+            console.log('| Lines | ' + t.lines.pct + '% |');
+            console.log('| Statements | ' + t.statements.pct + '% |');
+            console.log('| Functions | ' + t.functions.pct + '% |');
+            console.log('| Branches | ' + t.branches.pct + '% |');
+          " >> $GITHUB_STEP_SUMMARY
+        fi
+
     - name: Build for DEV
       run: npm run build
       working-directory: ${{ env.WEB_WORKING_DIRECTORY }}
@@ -267,6 +316,50 @@ jobs:
         app-name: 'dev-myweekendsleft-web'
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_DEV_WEB }}
         package: ./dist
+
+  e2e-tests-dev:
+    name: E2E Tests (DEV)
+    needs: [deploy-dev, deploy-frontend-dev]
+    runs-on: ubuntu-latest
+    if: |
+      (github.ref == 'refs/heads/develop' && github.event_name == 'push') ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'dev')
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: ${{ env.WEB_WORKING_DIRECTORY }}/package-lock.json
+
+    - name: Install dependencies
+      run: npm ci
+      working-directory: ${{ env.WEB_WORKING_DIRECTORY }}
+
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps chromium
+      working-directory: ${{ env.WEB_WORKING_DIRECTORY }}
+
+    - name: Wait for deployment to stabilize
+      run: sleep 30
+
+    - name: Run E2E Tests
+      run: npx playwright test
+      working-directory: ${{ env.WEB_WORKING_DIRECTORY }}
+      env:
+        BASE_URL: https://dev-myweekendsleft-web.azurewebsites.net
+
+    - name: Upload Playwright Report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: playwright-report
+        path: ${{ env.WEB_WORKING_DIRECTORY }}/playwright-report
+        retention-days: 7
 
   deploy-frontend-uat:
     name: Deploy Frontend to UAT

@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { WeekendsLeftResponse } from '../types/api';
+import { WeekendDots } from './WeekendDots';
 
 const ALL_TIPS = [
   "Try something new every month",
@@ -125,25 +126,25 @@ export function Results({ data, age, onReset }: ResultsProps) {
   return (
     <div className="w-full max-w-xl mx-auto space-y-6 animate-fade-in">
       {/* Main Result Card */}
-      <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 text-center">
         <div className="mb-6">
           <div className="text-7xl md:text-8xl font-extrabold text-sunset-500 animate-count-up">
             {displayedCount.toLocaleString()}
           </div>
-          <div className="text-xl text-gray-600 mt-2">
+          <div className="text-xl text-gray-600 dark:text-gray-400 mt-2">
             weekends remaining
           </div>
         </div>
 
         {/* Progress Bar */}
         <div className="mb-6">
-          <div className="h-4 bg-gray-200 rounded-full overflow-hidden">
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-ocean-400 to-sunset-500 progress-bar rounded-full"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
-          <div className="flex justify-between text-sm text-gray-500 mt-2">
+          <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400 mt-2">
             <span>{weekendsLived.toLocaleString()} lived</span>
             <span>{data.estimatedWeekendsLeft.toLocaleString()} left</span>
           </div>
@@ -151,19 +152,24 @@ export function Results({ data, age, onReset }: ResultsProps) {
 
         {/* Details */}
         {showDetails && (
-          <div className="space-y-3 text-gray-600 animate-slide-up">
+          <div className="space-y-3 text-gray-600 dark:text-gray-400 animate-slide-up">
             <div className="flex items-center justify-center gap-2">
               <span className="text-2xl">📅</span>
               <span>
-                Estimated until: <strong>{formattedDate}</strong> (age {data.estimatedAgeOfDeath})
+                Estimated until: <strong className="text-charcoal dark:text-gray-200">{formattedDate}</strong> (age {data.estimatedAgeOfDeath})
               </span>
             </div>
-            <p className="text-lg italic text-charcoal mt-4">
+            <p className="text-lg italic text-charcoal dark:text-gray-200 mt-4">
               "{data.message}"
             </p>
           </div>
         )}
       </div>
+
+      {/* Weekend Dots Visualization */}
+      {showDetails && (
+        <WeekendDots weekendsLived={weekendsLived} weekendsLeft={data.estimatedWeekendsLeft} />
+      )}
 
       {/* Action Buttons */}
       {showDetails && (
@@ -176,7 +182,7 @@ export function Results({ data, age, onReset }: ResultsProps) {
           </button>
           <button
             onClick={onReset}
-            className="flex-1 py-3 px-6 bg-white hover:bg-gray-50 text-charcoal font-medium rounded-xl shadow-md hover:shadow-lg transition-all border-2 border-gray-200 flex items-center justify-center gap-2"
+            className="flex-1 py-3 px-6 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-charcoal dark:text-gray-200 font-medium rounded-xl shadow-md hover:shadow-lg transition-all border-2 border-gray-200 dark:border-gray-600 flex items-center justify-center gap-2"
           >
             <span>🔄</span> Calculate Again
           </button>
@@ -185,11 +191,11 @@ export function Results({ data, age, onReset }: ResultsProps) {
 
       {/* Inspirational Tips */}
       {showDetails && (
-        <div className="bg-gradient-to-br from-sunset-50 to-ocean-50 rounded-2xl p-6 animate-slide-up">
-          <h3 className="font-semibold text-charcoal mb-3 flex items-center gap-2">
+        <div className="bg-gradient-to-br from-sunset-50 to-ocean-50 dark:from-gray-800 dark:to-gray-800 rounded-2xl p-6 animate-slide-up">
+          <h3 className="font-semibold text-charcoal dark:text-gray-200 mb-3 flex items-center gap-2">
             <span>💡</span> Make your weekends count:
           </h3>
-          <ul className="space-y-2 text-gray-700">
+          <ul className="space-y-2 text-gray-700 dark:text-gray-300">
             {randomTips.map((tip, index) => (
               <li key={index} className="flex items-start gap-2">
                 <span className="text-sunset-500">•</span>

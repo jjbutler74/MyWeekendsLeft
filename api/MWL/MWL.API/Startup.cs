@@ -36,6 +36,12 @@ namespace MWL.API
             // Validate critical configuration at startup
             ValidateConfiguration();
 
+            // Add Application Insights telemetry (connection string from config or Azure App Service)
+            services.AddApplicationInsightsTelemetry();
+
+            // Add response caching for GET endpoints
+            services.AddResponseCaching();
+
             // Configure rate limiting
             services.AddMemoryCache();
             services.Configure<IpRateLimitOptions>(Configuration.GetSection("IpRateLimiting"));
@@ -123,6 +129,9 @@ namespace MWL.API
 
             // Enable response compression
             app.UseResponseCompression();
+
+            // Enable response caching (after compression, before routing)
+            app.UseResponseCaching();
 
             app.UseSwagger();
             app.UseSwaggerUI(c =>

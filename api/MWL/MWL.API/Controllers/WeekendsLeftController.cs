@@ -40,6 +40,7 @@ namespace MWL.API.Controllers
         [HttpGet]
         [ApiVersion("1.0")]
         [Route("getweekends/")]
+        [ResponseCache(Duration = 3600, VaryByQueryKeys = new[] { "age", "gender", "country" })]
         [ProducesResponseType(typeof(WeekendsLeftResponse), 200)]
         [ProducesResponseType(typeof(ProblemDetails), 400)]
         [ProducesResponseType(typeof(ProblemDetails), 503)]

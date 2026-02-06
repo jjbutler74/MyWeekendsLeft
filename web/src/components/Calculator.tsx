@@ -18,14 +18,14 @@ export function Calculator({ onCalculate, isLoading }: CalculatorProps) {
 
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-xl mx-auto">
-      <div className="bg-white rounded-2xl shadow-lg p-8 space-y-6">
-        <h2 className="text-2xl font-semibold text-charcoal text-center mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 space-y-6">
+        <h2 className="text-2xl font-semibold text-charcoal dark:text-gray-100 text-center mb-6">
           How many weekends do you have left?
         </h2>
 
         {/* Age Input */}
         <div className="space-y-2">
-          <label htmlFor="age" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="age" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Your Age
           </label>
           <input
@@ -35,7 +35,7 @@ export function Calculator({ onCalculate, isLoading }: CalculatorProps) {
             max={120}
             value={age}
             onChange={(e) => setAge(Math.max(1, Math.min(120, parseInt(e.target.value) || 1)))}
-            className="w-full px-4 py-3 text-lg border-2 border-gray-200 rounded-xl focus:border-sunset-500 focus:ring-0 transition-colors text-center font-semibold"
+            className="w-full px-4 py-3 text-lg border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:border-sunset-500 focus:ring-0 transition-colors text-center font-semibold bg-white dark:bg-gray-700 text-charcoal dark:text-gray-100"
           />
           <input
             type="range"
@@ -43,13 +43,13 @@ export function Calculator({ onCalculate, isLoading }: CalculatorProps) {
             max={100}
             value={age}
             onChange={(e) => setAge(parseInt(e.target.value))}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-sunset-500"
+            className="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer accent-sunset-500"
           />
         </div>
 
         {/* Gender Selection */}
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Gender
           </label>
           <div className="grid grid-cols-2 gap-4">
@@ -59,7 +59,7 @@ export function Calculator({ onCalculate, isLoading }: CalculatorProps) {
               className={`px-6 py-3 rounded-xl font-medium transition-all ${
                 gender === 'Male'
                   ? 'bg-ocean-400 text-white shadow-md'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
             >
               Male
@@ -70,7 +70,7 @@ export function Calculator({ onCalculate, isLoading }: CalculatorProps) {
               className={`px-6 py-3 rounded-xl font-medium transition-all ${
                 gender === 'Female'
                   ? 'bg-ocean-400 text-white shadow-md'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
             >
               Female
@@ -80,14 +80,14 @@ export function Calculator({ onCalculate, isLoading }: CalculatorProps) {
 
         {/* Country Selection */}
         <div className="space-y-2">
-          <label htmlFor="country" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="country" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Country
           </label>
           <select
             id="country"
             value={country}
             onChange={(e) => setCountry(e.target.value)}
-            className="w-full px-4 py-3 text-lg border-2 border-gray-200 rounded-xl focus:border-sunset-500 focus:ring-0 transition-colors bg-white"
+            className="w-full px-4 py-3 text-lg border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:border-sunset-500 focus:ring-0 transition-colors bg-white dark:bg-gray-700 text-charcoal dark:text-gray-100"
           >
             {COUNTRIES.map((c) => (
               <option key={c.code} value={c.code}>
