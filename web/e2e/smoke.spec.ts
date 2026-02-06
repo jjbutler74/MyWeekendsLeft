@@ -12,8 +12,8 @@ test.describe('MyWeekendsLeft Smoke Tests', () => {
 
     // Verify calculator form elements are present
     await expect(page.getByLabel('Your Age')).toBeVisible();
-    await expect(page.getByText('Male')).toBeVisible();
-    await expect(page.getByText('Female')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Male', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Female', exact: true })).toBeVisible();
     await expect(page.getByLabel('Country')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Calculate My Weekends' })).toBeVisible();
   });
@@ -23,7 +23,7 @@ test.describe('MyWeekendsLeft Smoke Tests', () => {
 
     // Fill in the form
     await page.getByLabel('Your Age').fill('35');
-    await page.getByText('Male').click();
+    await page.getByRole('button', { name: 'Male', exact: true }).click();
 
     // Submit the form
     await page.getByRole('button', { name: 'Calculate My Weekends' }).click();
