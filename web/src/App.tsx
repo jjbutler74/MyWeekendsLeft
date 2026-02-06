@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Calculator } from './components/Calculator';
 import { Results } from './components/Results';
+import { ResultsSkeleton } from './components/ResultsSkeleton';
 import { DarkModeToggle } from './components/DarkModeToggle';
 import { useDarkMode } from './hooks/useDarkMode';
 import { getWeekendsLeft, getVersion, ApiException } from './services/api';
@@ -95,7 +96,9 @@ function App() {
           )}
 
           {/* Calculator or Results */}
-          {result && lastRequest ? (
+          {isLoading ? (
+            <ResultsSkeleton />
+          ) : result && lastRequest ? (
             <Results data={result} age={lastRequest.age} onReset={handleReset} />
           ) : (
             <Calculator onCalculate={handleCalculate} isLoading={isLoading} />
