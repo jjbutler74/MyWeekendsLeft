@@ -99,7 +99,7 @@ jobs:
         reporttypes: 'HtmlInline_AzurePipelines;Cobertura;MarkdownSummaryGithub'
 
     - name: Upload .NET Coverage Report
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: dotnet-coverage-report
         path: coverage-report
@@ -120,7 +120,7 @@ jobs:
           --no-build
 
     - name: Upload artifact for deployment
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: dotnet-app
         path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
@@ -229,7 +229,7 @@ jobs:
       working-directory: ${{ env.WEB_WORKING_DIRECTORY }}
 
     - name: Upload Frontend Coverage Report
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: frontend-coverage-report
         path: ${{ env.WEB_WORKING_DIRECTORY }}/coverage
@@ -266,7 +266,7 @@ jobs:
       working-directory: ${{ env.WEB_WORKING_DIRECTORY }}
 
     - name: Upload DEV artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: frontend-dev
         path: ${{ env.WEB_WORKING_DIRECTORY }}/dist
@@ -286,7 +286,7 @@ jobs:
       working-directory: ${{ env.WEB_WORKING_DIRECTORY }}
 
     - name: Upload UAT artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: frontend-uat
         path: ${{ env.WEB_WORKING_DIRECTORY }}/dist
@@ -354,7 +354,7 @@ jobs:
         BASE_URL: https://dev-myweekendsleft-web.azurewebsites.net
 
     - name: Upload Playwright Report
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       if: always()
       with:
         name: playwright-report
