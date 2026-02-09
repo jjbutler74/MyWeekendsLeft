@@ -130,9 +130,6 @@ namespace MWL.API
             // Enable response compression
             app.UseResponseCompression();
 
-            // Enable response caching (after compression, before routing)
-            app.UseResponseCaching();
-
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
@@ -146,6 +143,9 @@ namespace MWL.API
 
             // Enable CORS
             app.UseCors();
+
+            // Enable response caching (after CORS so cached responses include CORS headers)
+            app.UseResponseCaching();
 
             app.UseAuthorization();
 
