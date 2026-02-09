@@ -144,7 +144,10 @@ export function Results({ data, age, onReset }: ResultsProps) {
               style={{ width: `${progressPercent}%` }}
             />
           </div>
-          <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400 mt-2">
+          <div className="text-sm font-semibold text-charcoal dark:text-gray-200 mt-1 text-center">
+            {Math.round(progressPercent)}% of your life lived
+          </div>
+          <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400 mt-1">
             <span>{weekendsLived.toLocaleString()} lived</span>
             <span>{data.estimatedWeekendsLeft.toLocaleString()} left</span>
           </div>
