@@ -3,12 +3,13 @@ import { test, expect } from '@playwright/test';
 test.describe('MyWeekendsLeft Smoke Tests', () => {
   test('homepage loads and displays calculator', async ({ page }) => {
     await page.goto('/');
+    await page.waitForLoadState('networkidle');
 
     // Verify header is present
     await expect(page.getByRole('heading', { name: 'MyWeekendsLeft' })).toBeVisible();
 
-    // Verify hero text is present
-    await expect(page.getByText('Make Every Weekend Count')).toBeVisible();
+    // Verify hero text is present (has fade-in animation, allow time)
+    await expect(page.getByText('Make Every Weekend Count')).toBeVisible({ timeout: 10000 });
 
     // Verify calculator form elements are present
     await expect(page.getByLabel('Your Age')).toBeVisible();
@@ -20,6 +21,7 @@ test.describe('MyWeekendsLeft Smoke Tests', () => {
 
   test('can calculate weekends and see results', async ({ page }) => {
     await page.goto('/');
+    await page.waitForLoadState('networkidle');
 
     // Fill in the form
     await page.getByLabel('Your Age').fill('35');
@@ -28,17 +30,18 @@ test.describe('MyWeekendsLeft Smoke Tests', () => {
     // Submit the form
     await page.getByRole('button', { name: 'Calculate My Weekends' }).click();
 
-    // Wait for results (skeleton should appear then results)
-    await expect(page.getByText('weekends remaining')).toBeVisible({ timeout: 15000 });
+    // Wait for results (API call + count-up animation)
+    await expect(page.getByText('weekends remaining')).toBeVisible({ timeout: 30000 });
 
-    // Verify key result elements are present
-    await expect(page.getByText('Your Life in Weekends')).toBeVisible();
+    // Verify key result elements are present (appear after animation delay)
+    await expect(page.getByText('Your Life in Weekends')).toBeVisible({ timeout: 5000 });
     await expect(page.getByText('Make your weekends count:')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Calculate Again' })).toBeVisible();
   });
 
   test('can toggle dark mode', async ({ page }) => {
     await page.goto('/');
+    await page.waitForLoadState('networkidle');
 
     // Get dark mode toggle button
     const darkModeToggle = page.getByRole('button', { name: /switch to dark mode/i });
@@ -60,38 +63,37 @@ test.describe('MyWeekendsLeft Smoke Tests', () => {
 
   test('can reset and calculate again', async ({ page }) => {
     await page.goto('/');
+    await page.waitForLoadState('networkidle');
 
     // Calculate first time
     await page.getByLabel('Your Age').fill('40');
     await page.getByRole('button', { name: 'Calculate My Weekends' }).click();
-    await expect(page.getByText('weekends remaining')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText('weekends remaining')).toBeVisible({ timeout: 30000 });
 
-    // Click calculate again
+    // Wait for Calculate Again button (appears after count-up animation)
+    await expect(page.getByRole('button', { name: 'Calculate Again' })).toBeVisible({ timeout: 5000 });
     await page.getByRole('button', { name: 'Calculate Again' }).click();
 
     // Verify we're back to calculator
     await expect(page.getByRole('button', { name: 'Calculate My Weekends' })).toBeVisible();
-    await expect(page.getByText('Make Every Weekend Count')).toBeVisible();
+    await expect(page.getByText('Make Every Weekend Count')).toBeVisible({ timeout: 10000 });
   });
 
   test('API version is displayed in footer', async ({ page }) => {
     await page.goto('/');
-
-    // Wait a bit for the version to load
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('networkidle');
 
     // Check footer contains API version
     const footer = page.locator('footer');
-    await expect(footer).toContainText('API v');
+    await expect(footer).toContainText('API v', { timeout: 10000 });
   });
 
   test('GitHub link is present', async ({ page }) => {
     await page.goto('/');
+    await page.waitForLoadState('networkidle');
 
     // Verify GitHub link exists and points to correct repo
-    const githubLink = page.getByRole('link', { name: /github/i }).or(
-      page.locator('a[href*="github.com/jjbutler74/MyWeekendsLeft"]')
-    );
+    const githubLink = page.locator('a[href*="github.com/jjbutler74/MyWeekendsLeft"]');
     await expect(githubLink).toBeVisible();
   });
 });
