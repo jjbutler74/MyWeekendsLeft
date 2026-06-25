@@ -58,7 +58,7 @@ jobs:
         uses: openai/codex-action@v1
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
-          sandbox: workspace-write
+          sandbox: danger-full-access
           output-file: triage-result.json
           prompt: |
             You are triaging a GitHub issue for the repository jjbutler74/MyWeekendsLeft.
@@ -135,7 +135,7 @@ jobs:
         uses: openai/codex-action@v1
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
-          sandbox: workspace-write
+          sandbox: danger-full-access
           output-file: implementation-notes.md
           prompt: |
             You are implementing a valid GitHub issue for jjbutler74/MyWeekendsLeft.
