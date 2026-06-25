@@ -62,6 +62,18 @@ jobs:
           echo "OPENAI_API_KEY is present."
           echo "Length: ${#OPENAI_API_KEY}"
           echo "Prefix: ${OPENAI_API_KEY:0:7}..."
+      
+      - name: Test OpenAI API key
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          set -euo pipefail
+
+          curl -sS https://api.openai.com/v1/models \
+            -H "Authorization: Bearer $OPENAI_API_KEY" \
+            -o models.json
+
+          head -c 300 models.json
           
       - name: Triage issue with Codex CLI
         id: triage
