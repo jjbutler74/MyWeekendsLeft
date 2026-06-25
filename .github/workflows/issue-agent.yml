@@ -215,6 +215,43 @@ jobs:
 
           gh issue edit "$ISSUE_NUMBER" --add-label "agent:accepted" || true
 
+      - name: Mimic Codex auth with direct Responses API call
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          set -euo pipefail
+
+          cat > direct-codex-mimic-request.json <<'EOF'
+          {
+            "model": "gpt-4.1-mini",
+            "input": "You are a coding agent smoke test. Reply with exactly: DIRECT_API_OK"
+          }
+          EOF
+
+          STATUS=$(curl -sS -o direct-codex-mimic-response.json -w "%{http_code}" \
+            https://api.openai.com/v1/responses \
+            -H "Authorization: Bearer $OPENAI_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d @direct-codex-mimic-request.json)
+
+          echo "HTTP status: $STATUS"
+          cat direct-codex-mimic-response.json
+          echo ""
+
+          if [ "$STATUS" -lt 200 ] || [ "$STATUS" -ge 300 ]; then
+            echo "Direct API mimic failed."
+            exit 1
+          fi
+
+          echo "Extracted output:"
+          jq -r '
+            if .output_text then
+              .output_text
+            else
+              [.output[]?.content[]?.text] | join("")
+            end
+          ' direct-codex-mimic-response.json
+
       - name: Implement issue with Codex CLI
         if: steps.triage_json.outputs.valid == 'true'
         env:
