@@ -50,6 +50,19 @@ jobs:
 
           cat issue.json
 
+      - name: Check OpenAI key is present
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          if [ -z "$OPENAI_API_KEY" ]; then
+            echo "OPENAI_API_KEY is empty or not available to this workflow."
+            exit 1
+          fi
+
+          echo "OPENAI_API_KEY is present."
+          echo "Length: ${#OPENAI_API_KEY}"
+          echo "Prefix: ${OPENAI_API_KEY:0:7}..."
+          
       - name: Triage issue with Codex CLI
         id: triage
         env:
