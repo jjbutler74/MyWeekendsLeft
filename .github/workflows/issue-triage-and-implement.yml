@@ -8,7 +8,8 @@ permissions:
   contents: write
   issues: write
   pull-requests: write
-
+  id-token: write  # Required by claude-code-action@v1 for GitHub token setup
+  
 jobs:
   triage-and-implement:
     runs-on: ubuntu-latest
