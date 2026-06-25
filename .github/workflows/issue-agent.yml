@@ -68,7 +68,7 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-          npx -y @openai/codex exec --dangerously-bypass-approvals-and-sandbox "$(cat <<'EOF'
+          npx -y @openai/codex exec --api-key "$OPENAI_API_KEY" --dangerously-bypass-approvals-and-sandbox "$(cat <<'EOF'
           You are triaging a GitHub issue for the repository jjbutler74/MyWeekendsLeft.
 
           Read issue.json.
@@ -168,7 +168,7 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-          npx -y @openai/codex exec --dangerously-bypass-approvals-and-sandbox "$(cat <<'EOF'
+          npx -y @openai/codex exec --api-key "$OPENAI_API_KEY" --dangerously-bypass-approvals-and-sandbox "$(cat <<'EOF'
           You are implementing a valid GitHub issue for jjbutler74/MyWeekendsLeft.
 
           Read issue.json and triage-result.json.
