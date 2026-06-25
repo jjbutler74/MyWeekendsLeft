@@ -6,14 +6,26 @@ interface CalculatorProps {
   isLoading: boolean;
 }
 
+const MIN_AGE = 1;
+const MAX_AGE = 120;
+
+// Clamp the raw input into a valid age, defaulting to MIN_AGE when empty/invalid.
+const clampAge = (value: string): number => {
+  const parsed = parseInt(value, 10);
+  if (Number.isNaN(parsed)) return MIN_AGE;
+  return Math.max(MIN_AGE, Math.min(MAX_AGE, parsed));
+};
+
 export function Calculator({ onCalculate, isLoading }: CalculatorProps) {
-  const [age, setAge] = useState<number>(35);
+  // Stored as a string so the field can be cleared and retyped without
+  // snapping back to a default value on every keystroke.
+  const [age, setAge] = useState<string>('35');
   const [gender, setGender] = useState<'Male' | 'Female'>('Male');
   const [country, setCountry] = useState<string>('USA');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onCalculate({ age, gender, country });
+    onCalculate({ age: clampAge(age), gender, country });
   };
 
   return (
@@ -31,18 +43,19 @@ export function Calculator({ onCalculate, isLoading }: CalculatorProps) {
           <input
             type="number"
             id="age"
-            min={1}
-            max={120}
+            min={MIN_AGE}
+            max={MAX_AGE}
             value={age}
-            onChange={(e) => setAge(Math.max(1, Math.min(120, parseInt(e.target.value) || 1)))}
+            onChange={(e) => setAge(e.target.value)}
+            onBlur={() => setAge(String(clampAge(age)))}
             className="w-full px-4 py-3 text-lg border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:border-sunset-500 focus:ring-0 transition-colors text-center font-semibold bg-white dark:bg-gray-700 text-charcoal dark:text-gray-100"
           />
           <input
             type="range"
-            min={1}
+            min={MIN_AGE}
             max={100}
-            value={age}
-            onChange={(e) => setAge(parseInt(e.target.value))}
+            value={age === '' ? MIN_AGE : clampAge(age)}
+            onChange={(e) => setAge(e.target.value)}
             className="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer accent-sunset-500"
           />
         </div>
