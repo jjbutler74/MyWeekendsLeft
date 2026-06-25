@@ -84,8 +84,6 @@ jobs:
           fi
 
       - name: Write Codex config
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           set -euo pipefail
 
@@ -96,11 +94,6 @@ jobs:
           model = "gpt-5.5"
           approval_policy = "never"
           sandbox_mode = "danger-full-access"
-
-          [model_providers.openai]
-          name = "OpenAI"
-          base_url = "https://api.openai.com/v1"
-          env_key = "OPENAI_API_KEY"
           EOF
 
           echo "Codex config written."
