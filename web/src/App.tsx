@@ -101,7 +101,7 @@ function App() {
           ) : result && lastRequest ? (
             <Results data={result} age={lastRequest.age} onReset={handleReset} />
           ) : (
-            <Calculator onCalculate={handleCalculate} isLoading={isLoading} />
+            <Calculator onCalculate={handleCalculate} isLoading={isLoading} initialValues={lastRequest} />
           )}
         </div>
       </main>
