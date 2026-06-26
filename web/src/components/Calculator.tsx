@@ -4,6 +4,7 @@ import { WeekendsLeftRequest, COUNTRIES } from '../types/api';
 interface CalculatorProps {
   onCalculate: (request: WeekendsLeftRequest) => void;
   isLoading: boolean;
+  initialValues?: WeekendsLeftRequest | null;
 }
 
 const MIN_AGE = 1;
@@ -16,12 +17,12 @@ const clampAge = (value: string): number => {
   return Math.max(MIN_AGE, Math.min(MAX_AGE, parsed));
 };
 
-export function Calculator({ onCalculate, isLoading }: CalculatorProps) {
+export function Calculator({ onCalculate, isLoading, initialValues }: CalculatorProps) {
   // Stored as a string so the field can be cleared and retyped without
   // snapping back to a default value on every keystroke.
-  const [age, setAge] = useState<string>('35');
-  const [gender, setGender] = useState<'Male' | 'Female'>('Male');
-  const [country, setCountry] = useState<string>('USA');
+  const [age, setAge] = useState<string>(initialValues ? String(initialValues.age) : '35');
+  const [gender, setGender] = useState<'Male' | 'Female'>(initialValues?.gender ?? 'Male');
+  const [country, setCountry] = useState<string>(initialValues?.country ?? 'USA');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

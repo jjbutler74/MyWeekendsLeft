@@ -56,6 +56,29 @@ describe('Calculator', () => {
     expect(submitButton).toBeDisabled();
   });
 
+  it('seeds the form from initialValues so previous inputs are preserved', async () => {
+    const user = userEvent.setup();
+    const onCalculate = vi.fn();
+    render(
+      <Calculator
+        onCalculate={onCalculate}
+        isLoading={false}
+        initialValues={{ age: 50, gender: 'Female', country: 'JPN' }}
+      />
+    );
+
+    expect(screen.getByLabelText('Your Age')).toHaveValue(50);
+    expect(screen.getByLabelText('Country')).toHaveValue('JPN');
+
+    await user.click(screen.getByText('Calculate My Weekends'));
+
+    expect(onCalculate).toHaveBeenCalledWith({
+      age: 50,
+      gender: 'Female',
+      country: 'JPN',
+    });
+  });
+
   it('renders all country options', () => {
     render(<Calculator onCalculate={vi.fn()} isLoading={false} />);
 
