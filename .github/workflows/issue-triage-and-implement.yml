@@ -25,7 +25,7 @@ jobs:
           use_bedrock: "false"
           use_vertex: "false"
           claude_args: |
-            --max-turns 20
+            --max-turns 40
             --allowedTools "Read,Write,Edit,Bash(git:*),Bash(gh:*)"
           prompt: |
             REPO: ${{ github.repository }}
