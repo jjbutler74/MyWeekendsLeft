@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { WeekendsLeftRequest, COUNTRIES } from '../types/api';
 
 interface CalculatorProps {
-  onCalculate: (request: WeekendsLeftRequest) => void;
-  isLoading: boolean;
-  initialValues?: WeekendsLeftRequest | null;
+  readonly onCalculate: (request: WeekendsLeftRequest) => void;
+  readonly isLoading: boolean;
+  readonly initialValues?: WeekendsLeftRequest | null;
 }
 
 const MIN_AGE = 1;

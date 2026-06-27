@@ -1,6 +1,6 @@
 interface DarkModeToggleProps {
-  isDark: boolean;
-  onToggle: () => void;
+  readonly isDark: boolean;
+  readonly onToggle: () => void;
 }
 
 export function DarkModeToggle({ isDark, onToggle }: DarkModeToggleProps) {
