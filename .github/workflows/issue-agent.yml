@@ -26,11 +26,15 @@ jobs:
     steps:
       - name: Resolve issue number
         id: issue
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          DISPATCH_ISSUE_NUMBER: ${{ inputs.issue_number }}
+          EVENT_ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "number=${{ inputs.issue_number }}" >> "$GITHUB_OUTPUT"
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "number=$DISPATCH_ISSUE_NUMBER" >> "$GITHUB_OUTPUT"
           else
-            echo "number=${{ github.event.issue.number }}" >> "$GITHUB_OUTPUT"
+            echo "number=$EVENT_ISSUE_NUMBER" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Checkout main
@@ -306,12 +310,12 @@ jobs:
           set -euo pipefail
 
           if [ -f package-lock.json ]; then
-            npm ci
+            npm ci --ignore-scripts
           elif [ -f pnpm-lock.yaml ]; then
             corepack enable
-            pnpm install --frozen-lockfile
+            pnpm install --frozen-lockfile --ignore-scripts
           elif [ -f yarn.lock ]; then
-            yarn install --frozen-lockfile
+            yarn install --frozen-lockfile --ignore-scripts
           else
             echo "No recognised JS lockfile found. Skipping dependency install."
           fi
