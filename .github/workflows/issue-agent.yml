@@ -268,7 +268,7 @@ jobs:
           set -euo pipefail
           export OPENAI_API_KEY
 
-          npx -y @openai/codex exec --dangerously-bypass-approvals-and-sandbox "$(cat <<'EOF'
+          npx --ignore-scripts -y @openai/codex exec --dangerously-bypass-approvals-and-sandbox "$(cat <<'EOF'
           You are implementing a valid GitHub issue for jjbutler74/MyWeekendsLeft.
 
           Read these files:
