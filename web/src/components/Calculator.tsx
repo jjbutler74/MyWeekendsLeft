@@ -12,7 +12,7 @@ const MAX_AGE = 120;
 
 // Clamp the raw input into a valid age, defaulting to MIN_AGE when empty/invalid.
 const clampAge = (value: string): number => {
-  const parsed = parseInt(value, 10);
+  const parsed = Number.parseInt(value, 10);
   if (Number.isNaN(parsed)) return MIN_AGE;
   return Math.max(MIN_AGE, Math.min(MAX_AGE, parsed));
 };
