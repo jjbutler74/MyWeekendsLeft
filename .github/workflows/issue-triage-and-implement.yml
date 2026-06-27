@@ -1,0 +1,77 @@
+name: Claude Issue Triage & Implement
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  id-token: write  # Required by claude-code-action@v1 for GitHub token setup
+  
+jobs:
+  triage-and-implement:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          show_full_output: true
+          use_bedrock: "false"
+          use_vertex: "false"
+          claude_args: |
+            --max-turns 40
+            --allowedTools "Read,Write,Edit,Bash(git:*),Bash(gh:*)"
+          prompt: |
+            REPO: ${{ github.repository }}
+            ISSUE NUMBER: ${{ github.event.issue.number }}
+            ISSUE TITLE: ${{ github.event.issue.title }}
+            ISSUE BODY: ${{ github.event.issue.body }}
+            ISSUE AUTHOR: ${{ github.event.issue.user.login }}
+
+            You are an autonomous agent for the MyWeekendsLeft project — a C# API that calculates
+            remaining weekends based on age, gender, and country life expectancy data.
+
+            ## Step 1: Triage
+
+            Evaluate whether this issue is a valid, implementable code change. Apply these criteria:
+
+            VALID if:
+            - It's a clear bug fix, feature request, or data update
+            - It's scoped to C# code changes (not infra, CI, or Azure config)
+            - It's unambiguous enough to implement without clarification
+            - It doesn't break the existing public API contract (query params: age, gender, country)
+
+            INVALID if:
+            - It's vague, spam, a duplicate, or asks for a breaking API change
+            - It requires discussion or design decisions beyond code
+            - It touches Terraform/HCL, Azure config, or pipeline files
+
+            Apply a GitHub label based on your assessment:
+            - Valid and will implement → label: `agent-implementing`
+            - Needs clarification → label: `needs-clarification`, post a comment explaining what's needed, then STOP
+            - Out of scope / invalid → label: `wont-fix`, post a comment explaining why, close the issue, then STOP
+
+            Use `gh issue edit ${{ github.event.issue.number }} --add-label "<label>"` to apply labels.
+            Use `gh issue comment ${{ github.event.issue.number }} --body "<message>"` to comment.
+            Use `gh issue close ${{ github.event.issue.number }}` to close if invalid.
+
+            ## Step 2: Implement (only if valid)
+
+            If valid, implement the change:
+
+            1. Create a feature branch: `git checkout -b agent/issue-${{ github.event.issue.number }}-<short-slug> origin/develop`
+            2. Read the relevant C# source files to understand the codebase
+            3. Make the minimal correct change to address the issue
+            4. Commit with message: `fix: <description> (closes #${{ github.event.issue.number }})`
+            5. Push the branch: `git push origin <branch-name>`
+            6. Open a PR targeting `develop`:
+               `gh pr create --base develop --title "<title>" --body "Closes #${{ github.event.issue.number }}\n\n<description of change>"`
+            7. Post a comment on the issue linking to the PR
+
+            Keep changes minimal. Do not refactor unrelated code. Do not touch HCL or pipeline files.

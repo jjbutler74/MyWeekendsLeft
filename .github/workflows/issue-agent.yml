@@ -1,0 +1,420 @@
+name: Issue Agent
+
+on:
+  issues:
+    types: [opened]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "Issue number to process"
+        required: true
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  issue-agent:
+    runs-on: ubuntu-latest
+
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.issue.pull_request == null &&
+       github.event.action == 'opened')
+
+    steps:
+      - name: Resolve issue number
+        id: issue
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "number=${{ inputs.issue_number }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "number=${{ github.event.issue.number }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout main
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Fetch issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ steps.issue.outputs.number }}
+        run: |
+          set -euo pipefail
+
+          gh issue view "$ISSUE_NUMBER" \
+            --json number,title,body,author,labels,url \
+            > issue.json
+
+          echo "Fetched issue:"
+          cat issue.json
+
+      - name: Check OpenAI key is present
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "$OPENAI_API_KEY" ]; then
+            echo "OPENAI_API_KEY is empty or not available to this workflow."
+            exit 1
+          fi
+
+          echo "OPENAI_API_KEY is present."
+          echo "Length: ${#OPENAI_API_KEY}"
+
+      - name: Test OpenAI API directly
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          set -euo pipefail
+
+          STATUS=$(curl -sS -o openai-test.json -w "%{http_code}" \
+            https://api.openai.com/v1/models \
+            -H "Authorization: Bearer $OPENAI_API_KEY")
+
+          echo "HTTP status: $STATUS"
+          head -c 500 openai-test.json
+          echo ""
+
+          if [ "$STATUS" -lt 200 ] || [ "$STATUS" -ge 300 ]; then
+            echo "OpenAI API test failed. The key is present, but OpenAI rejected it."
+            exit 1
+          fi
+
+      - name: Triage issue with OpenAI API
+        id: triage
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          set -euo pipefail
+
+          ISSUE_JSON=$(cat issue.json)
+
+          jq -n \
+            --arg issue "$ISSUE_JSON" \
+            '{
+              model: "gpt-5.5",
+              input: [
+                {
+                  role: "user",
+                  content: "You are triaging a GitHub issue for jjbutler74/MyWeekendsLeft.\n\nIssue JSON:\n\n\($issue)\n\nDecide whether the request is valid enough to implement.\n\nValid means:\n- the request is understandable;\n- it appears relevant to this repository;\n- it is small enough for one PR;\n- it does not require secrets, credentials, private data, paid external services, or destructive actions;\n- it does not ask for unrelated rewrites or vague product direction;\n- it can be tested or at least verified.\n\nInvalid means:\n- unclear or missing acceptance criteria;\n- unrelated to this project;\n- unsafe;\n- too broad;\n- impossible to verify;\n- duplicate-looking without enough information.\n\nReturn ONLY JSON in this shape:\n{\"valid\":true,\"reason\":\"short reason\",\"summary\":\"what should be changed\",\"risk\":\"low|medium|high\",\"suggested_branch\":\"agent/issue-N-short-slug\"}\n\nUse the actual issue number in the branch name. Keep the branch name lowercase and safe for Git."
+                }
+              ]
+            }' > openai-request.json
+
+          STATUS=$(curl -sS -o openai-response.json -w "%{http_code}" \
+            https://api.openai.com/v1/responses \
+            -H "Authorization: Bearer $OPENAI_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d @openai-request.json)
+
+          echo "HTTP status: $STATUS"
+          cat openai-response.json
+          echo ""
+
+          if [ "$STATUS" -lt 200 ] || [ "$STATUS" -ge 300 ]; then
+            echo "OpenAI API request failed."
+            exit 1
+          fi
+
+          jq -r '
+            if .output_text then
+              .output_text
+            else
+              [.output[]?.content[]?.text] | join("")
+            end
+          ' openai-response.json > triage-result.json
+
+          echo "Triage result:"
+          cat triage-result.json
+
+      - name: Validate triage JSON
+        id: triage_json
+        run: |
+          set -euo pipefail
+
+          echo "Triage output:"
+          cat triage-result.json
+
+          VALID=$(jq -r '.valid // false' triage-result.json)
+          BRANCH=$(jq -r '.suggested_branch // empty' triage-result.json)
+          REASON=$(jq -r '.reason // "No reason provided."' triage-result.json)
+          SUMMARY=$(jq -r '.summary // "No summary provided."' triage-result.json)
+          RISK=$(jq -r '.risk // "unknown"' triage-result.json)
+
+          if [ -z "$BRANCH" ] || [ "$BRANCH" = "null" ]; then
+            BRANCH="agent/issue-${{ steps.issue.outputs.number }}"
+          fi
+
+          # Sanitise branch name just in case the model returned something odd.
+          BRANCH=$(echo "$BRANCH" \
+            | tr '[:upper:]' '[:lower:]' \
+            | sed 's#[^a-z0-9/_-]#-#g' \
+            | sed 's#//*#/#g' \
+            | sed 's#^/##' \
+            | sed 's#/$##')
+
+          if [ -z "$BRANCH" ]; then
+            BRANCH="agent/issue-${{ steps.issue.outputs.number }}"
+          fi
+
+          echo "valid=$VALID" >> "$GITHUB_OUTPUT"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+
+          echo "reason<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$REASON" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+          echo "summary<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$SUMMARY" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+          echo "risk=$RISK" >> "$GITHUB_OUTPUT"
+
+      - name: Comment and label invalid issue
+        if: steps.triage_json.outputs.valid != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ steps.issue.outputs.number }}
+          REASON: ${{ steps.triage_json.outputs.reason }}
+        run: |
+          set -euo pipefail
+
+          gh issue edit "$ISSUE_NUMBER" --add-label "agent:needs-info" || true
+
+          gh issue comment "$ISSUE_NUMBER" --body "Agent triage: I am not opening a PR for this yet.
+
+          Reason: $REASON
+
+          Please add clearer acceptance criteria or more context."
+
+      - name: Create working branch
+        if: steps.triage_json.outputs.valid == 'true'
+        env:
+          BRANCH: ${{ steps.triage_json.outputs.branch }}
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git checkout -b "$BRANCH"
+
+      - name: Label accepted issue
+        if: steps.triage_json.outputs.valid == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ steps.issue.outputs.number }}
+        run: |
+          set -euo pipefail
+
+          gh issue edit "$ISSUE_NUMBER" --add-label "agent:accepted" || true
+
+      - name: Mimic Codex auth with direct Responses API call
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          set -euo pipefail
+
+          cat > direct-codex-mimic-request.json <<'EOF'
+          {
+            "model": "gpt-4.1-mini",
+            "input": "You are a coding agent smoke test. Reply with exactly: DIRECT_API_OK"
+          }
+          EOF
+
+          STATUS=$(curl -sS -o direct-codex-mimic-response.json -w "%{http_code}" \
+            https://api.openai.com/v1/responses \
+            -H "Authorization: Bearer $OPENAI_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d @direct-codex-mimic-request.json)
+
+          echo "HTTP status: $STATUS"
+          cat direct-codex-mimic-response.json
+          echo ""
+
+          if [ "$STATUS" -lt 200 ] || [ "$STATUS" -ge 300 ]; then
+            echo "Direct API mimic failed."
+            exit 1
+          fi
+
+          echo "Extracted output:"
+          jq -r '
+            if .output_text then
+              .output_text
+            else
+              [.output[]?.content[]?.text] | join("")
+            end
+          ' direct-codex-mimic-response.json
+
+      - name: Implement issue with Codex CLI
+        if: steps.triage_json.outputs.valid == 'true'
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ISSUE_NUMBER: ${{ steps.issue.outputs.number }}
+          TRIAGE_REASON: ${{ steps.triage_json.outputs.reason }}
+          TRIAGE_SUMMARY: ${{ steps.triage_json.outputs.summary }}
+          TRIAGE_RISK: ${{ steps.triage_json.outputs.risk }}
+        run: |
+          set -euo pipefail
+          export OPENAI_API_KEY
+
+          npx -y @openai/codex exec --dangerously-bypass-approvals-and-sandbox "$(cat <<'EOF'
+          You are implementing a valid GitHub issue for jjbutler74/MyWeekendsLeft.
+
+          Read these files:
+          - issue.json
+          - triage-result.json
+
+          Make the smallest safe code change that satisfies the issue.
+
+          Rules:
+          - Do not change unrelated files.
+          - Do not rewrite the app.
+          - Do not add new dependencies unless clearly necessary.
+          - Prefer simple, maintainable code.
+          - Update tests if tests exist.
+          - If no tests exist, add a lightweight verification note in implementation-notes.md.
+          - Do not commit.
+          - Do not push.
+          - Do not open the PR yourself.
+          - Do not modify .github/workflows/issue-agent.yml.
+          - Do not touch secrets, credentials, tokens, deployment settings, or billing-related files.
+
+          After editing, write implementation-notes.md with:
+          - summary of changes;
+          - files changed;
+          - how to test;
+          - any risks or assumptions.
+
+          If you cannot safely implement the issue, do not change code. Instead, write implementation-notes.md explaining why.
+          EOF
+          )"
+
+          if [ ! -f implementation-notes.md ]; then
+            echo "Codex did not create implementation-notes.md" > implementation-notes.md
+          fi
+
+      - name: Install dependencies
+        if: steps.triage_json.outputs.valid == 'true'
+        run: |
+          set -euo pipefail
+
+          if [ -f package-lock.json ]; then
+            npm ci
+          elif [ -f pnpm-lock.yaml ]; then
+            corepack enable
+            pnpm install --frozen-lockfile
+          elif [ -f yarn.lock ]; then
+            yarn install --frozen-lockfile
+          else
+            echo "No recognised JS lockfile found. Skipping dependency install."
+          fi
+
+      - name: Run checks
+        if: steps.triage_json.outputs.valid == 'true'
+        run: |
+          set -euo pipefail
+
+          if [ -f package.json ]; then
+            if npm run | grep -qE " test$| test "; then
+              npm test
+            else
+              echo "No npm test script found."
+            fi
+
+            if npm run | grep -qE " build$| build "; then
+              npm run build
+            else
+              echo "No npm build script found."
+            fi
+          else
+            echo "No package.json found. Skipping npm checks."
+          fi
+
+      - name: Commit and push changes
+        if: steps.triage_json.outputs.valid == 'true'
+        id: commit
+        env:
+          BRANCH: ${{ steps.triage_json.outputs.branch }}
+        run: |
+          set -euo pipefail
+
+          # Do not allow the agent to modify this workflow.
+          if ! git diff --quiet -- .github/workflows/issue-agent.yml; then
+            echo "Codex modified issue-agent.yml. Reverting that file."
+            git checkout -- .github/workflows/issue-agent.yml
+          fi
+
+          if git diff --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git status
+          git add .
+          git commit -m "Fix issue #${{ steps.issue.outputs.number }}"
+          git push origin "$BRANCH"
+
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Open pull request
+        if: steps.triage_json.outputs.valid == 'true' && steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ steps.issue.outputs.number }}
+          BRANCH: ${{ steps.triage_json.outputs.branch }}
+          REASON: ${{ steps.triage_json.outputs.reason }}
+          SUMMARY: ${{ steps.triage_json.outputs.summary }}
+          RISK: ${{ steps.triage_json.outputs.risk }}
+        run: |
+          set -euo pipefail
+
+          TITLE=$(jq -r '.title' issue.json)
+
+          gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --draft \
+            --title "Issue #$ISSUE_NUMBER: $TITLE" \
+            --body "$(cat <<EOF
+          ## Agent-generated PR
+
+          Fixes #$ISSUE_NUMBER
+
+          ## Triage
+
+          **Valid:** yes  
+          **Reason:** $REASON  
+          **Risk:** $RISK
+
+          ## Intended change
+
+          $SUMMARY
+
+          ## Implementation notes
+
+          $(cat implementation-notes.md)
+          EOF
+          )"
+
+          gh issue edit "$ISSUE_NUMBER" --add-label "agent:pr-created" || true
+
+      - name: Comment if no changes made
+        if: steps.triage_json.outputs.valid == 'true' && steps.commit.outputs.changed == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ steps.issue.outputs.number }}
+        run: |
+          set -euo pipefail
+
+          gh issue edit "$ISSUE_NUMBER" --add-label "agent:human-review" || true
+
+          gh issue comment "$ISSUE_NUMBER" --body "Agent triage marked this as valid, but no code changes were produced. This needs human review.
+
+          See implementation-notes.md in the workflow logs if Codex produced an explanation."
