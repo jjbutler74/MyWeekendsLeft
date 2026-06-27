@@ -225,7 +225,7 @@ jobs:
       working-directory: ${{ env.WEB_WORKING_DIRECTORY }}
 
     - name: Run Frontend Tests with Coverage
-      run: npx vitest run --coverage
+      run: npm run test:coverage
       working-directory: ${{ env.WEB_WORKING_DIRECTORY }}
 
     - name: Upload Frontend Coverage Report
@@ -262,7 +262,8 @@ jobs:
       run: |
         cp server.cjs dist/
         cp package.json dist/
-        cd dist && npm install --omit=dev
+        cp package-lock.json dist/
+        cd dist && npm ci --omit=dev
       working-directory: ${{ env.WEB_WORKING_DIRECTORY }}
 
     - name: Upload DEV artifact
@@ -282,7 +283,8 @@ jobs:
       run: |
         cp server.cjs dist/
         cp package.json dist/
-        cd dist && npm install --omit=dev
+        cp package-lock.json dist/
+        cd dist && npm ci --omit=dev
       working-directory: ${{ env.WEB_WORKING_DIRECTORY }}
 
     - name: Upload UAT artifact
@@ -341,14 +343,14 @@ jobs:
       working-directory: ${{ env.WEB_WORKING_DIRECTORY }}
 
     - name: Install Playwright Browsers
-      run: npx playwright install --with-deps chromium
+      run: npx --no-install playwright install --with-deps chromium
       working-directory: ${{ env.WEB_WORKING_DIRECTORY }}
 
     - name: Wait for deployment to stabilize
       run: sleep 30
 
     - name: Run E2E Tests
-      run: npx playwright test
+      run: npm run test:e2e
       working-directory: ${{ env.WEB_WORKING_DIRECTORY }}
       env:
         BASE_URL: https://dev-myweekendsleft-web.azurewebsites.net

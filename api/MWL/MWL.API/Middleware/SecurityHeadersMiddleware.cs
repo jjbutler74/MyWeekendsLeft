@@ -29,8 +29,16 @@ namespace MWL.API.Middleware
             // Control referrer information
             context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
 
-            // Content Security Policy - restrict resource loading
-            context.Response.Headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; frame-ancestors 'none'";
+            // Content Security Policy - restrict resource loading.
+            // The Swagger UI page (served at "/") has two static inline <script> blocks and one
+            // static inline <style> block baked in by Swashbuckle 6.5.0. Their hashes are allow-listed
+            // below instead of 'unsafe-inline'. If the Swagger config changes (e.g. adding a v2 doc),
+            // the inline bootstrap script's content changes too, and its hash below must be regenerated
+            // (fetch "/index.html", hash the new <script> content with SHA-256, base64-encode it).
+            context.Response.Headers["Content-Security-Policy"] = "default-src 'self'; " +
+                "script-src 'self' 'sha256-Tui7QoFlnLXkJCSl1/JvEZdIXTmBttnWNxzJpXomQjg=' 'sha256-m/T5Wy5/ZwCoQQVeIDdemxZcr9EMBQ7ZoVatNHo7sKo='; " +
+                "style-src 'self' 'sha256-wkAU1AW/h8YFx0XlzvpTllAKnFEO2tw8aKErs5a26LY='; " +
+                "img-src 'self' data:; font-src 'self'; frame-ancestors 'none'";
 
             // Allow caching for read-only API endpoints, prevent caching for others
             var path = context.Request.Path.Value?.ToLowerInvariant() ?? "";
