@@ -323,6 +323,7 @@ jobs:
     name: E2E Tests (DEV)
     needs: [deploy-dev, deploy-frontend-dev]
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     if: |
       (github.ref == 'refs/heads/develop' && github.event_name == 'push') ||
       (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'dev')
@@ -345,6 +346,12 @@ jobs:
     - name: Install Playwright Browsers
       run: npx --no-install playwright install --with-deps chromium
       working-directory: ${{ env.WEB_WORKING_DIRECTORY }}
+      env:
+        # Without this, `apt-get install` (run internally by --with-deps) can hang
+        # forever waiting on an interactive needrestart/debconf prompt that has no
+        # TTY to answer it - this hung every push-triggered run for days.
+        DEBIAN_FRONTEND: noninteractive
+        NEEDRESTART_MODE: a
 
     - name: Wait for deployment to stabilize
       run: sleep 30
