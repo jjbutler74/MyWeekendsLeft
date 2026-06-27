@@ -19,7 +19,10 @@ function App() {
   useEffect(() => {
     getVersion()
       .then((v) => setApiVersion(v.build))
-      .catch(() => setApiVersion(null));
+      .catch((err) => {
+        console.error('Failed to fetch API version:', err);
+        setApiVersion(null);
+      });
   }, []);
 
   const handleCalculate = async (request: WeekendsLeftRequest) => {
