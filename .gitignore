@@ -354,3 +354,7 @@ MigrationBackup/
 
 # Claude Code
 .claude/
+
+# Playwright / test output
+test-results/
+playwright-report/

@@ -39,7 +39,7 @@ jobs:
           --results-directory ./test-results
 
     - name: Publish Test Results
-      uses: dorny/test-reporter@v1
+      uses: dorny/test-reporter@3eeb9fc888e82e8be2fb356bbeec2750231672bc # v1
       if: always()
       with:
         name: PR Test Results
