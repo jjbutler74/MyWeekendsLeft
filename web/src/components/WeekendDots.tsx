@@ -1,6 +1,6 @@
 interface WeekendDotsProps {
-  weekendsLived: number;
-  weekendsLeft: number;
+  readonly weekendsLived: number;
+  readonly weekendsLeft: number;
 }
 
 export function WeekendDots({ weekendsLived, weekendsLeft }: WeekendDotsProps) {

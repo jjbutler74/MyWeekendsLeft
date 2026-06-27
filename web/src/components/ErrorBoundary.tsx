@@ -1,7 +1,7 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
 
 interface Props {
-  children: ReactNode;
+  readonly children: ReactNode;
 }
 
 interface State {

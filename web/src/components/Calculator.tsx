@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { WeekendsLeftRequest, COUNTRIES } from '../types/api';
 
 interface CalculatorProps {
-  onCalculate: (request: WeekendsLeftRequest) => void;
-  isLoading: boolean;
-  initialValues?: WeekendsLeftRequest | null;
+  readonly onCalculate: (request: WeekendsLeftRequest) => void;
+  readonly isLoading: boolean;
+  readonly initialValues?: WeekendsLeftRequest | null;
 }
 
 const MIN_AGE = 1;
@@ -12,7 +12,7 @@ const MAX_AGE = 120;
 
 // Clamp the raw input into a valid age, defaulting to MIN_AGE when empty/invalid.
 const clampAge = (value: string): number => {
-  const parsed = parseInt(value, 10);
+  const parsed = Number.parseInt(value, 10);
   if (Number.isNaN(parsed)) return MIN_AGE;
   return Math.max(MIN_AGE, Math.min(MAX_AGE, parsed));
 };

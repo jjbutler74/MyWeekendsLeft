@@ -1,6 +1,7 @@
 # MyWeekendsLeft
 
 [![Build and Deploy](https://github.com/jjbutler74/MyWeekendsLeft/actions/workflows/build-and-deploy.yml/badge.svg)](https://github.com/jjbutler74/MyWeekendsLeft/actions/workflows/build-and-deploy.yml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=jjbutler74_MyWeekendsLeft&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=jjbutler74_MyWeekendsLeft)
 
 A service to inspire people to get busy living! Calculate how many weekends you have left and make every one count.
 
@@ -64,7 +65,7 @@ npm run test:coverage # With coverage
 
 ```bash
 cd web
-npx playwright test
+npm run test:e2e
 ```
 
 ## Features

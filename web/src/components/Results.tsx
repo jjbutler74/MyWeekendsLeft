@@ -61,9 +61,9 @@ function getRandomTips(count: number): string[] {
 }
 
 interface ResultsProps {
-  data: WeekendsLeftResponse;
-  age: number;
-  onReset: () => void;
+  readonly data: WeekendsLeftResponse;
+  readonly age: number;
+  readonly onReset: () => void;
 }
 
 export function Results({ data, age, onReset }: ResultsProps) {
