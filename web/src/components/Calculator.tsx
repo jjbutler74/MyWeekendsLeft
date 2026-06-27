@@ -26,6 +26,7 @@ export function Calculator({ onCalculate, isLoading, initialValues }: Calculator
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading) return;
     onCalculate({ age: clampAge(age), gender, country });
   };
 

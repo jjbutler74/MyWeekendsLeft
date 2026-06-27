@@ -125,17 +125,29 @@ namespace MWL.API.Controllers
         [HttpGet]
         [ApiVersion("2.0")]
         [Route("getweekends/")]
-        public string WeekendsLeftResponse2()
+        [ProducesResponseType(typeof(ProblemDetails), 501)]
+        public IActionResult WeekendsLeftResponse2()
         {
-            return "Version 2.0 is not yet implemented.";
+            return StatusCode(501, new ProblemDetails
+            {
+                Title = "Not Implemented",
+                Detail = "API version 2.0 is not yet implemented.",
+                Status = 501
+            });
         }
 
         [HttpGet]
         [ApiVersion("2.0")]
         [Route("version/")]
-        public string Version2()
+        [ProducesResponseType(typeof(ProblemDetails), 501)]
+        public IActionResult Version2()
         {
-            return "Version 2.0 is not yet implemented.";
+            return StatusCode(501, new ProblemDetails
+            {
+                Title = "Not Implemented",
+                Detail = "API version 2.0 is not yet implemented.",
+                Status = 501
+            });
         }
     }
 }

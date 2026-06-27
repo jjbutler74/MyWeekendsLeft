@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MWL.Models.Entities
+﻿namespace MWL.Models.Entities
 {
     public class VersionInfo
     {
