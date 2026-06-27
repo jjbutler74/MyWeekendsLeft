@@ -9,7 +9,7 @@ permissions:
   issues: write
   pull-requests: write
   id-token: write  # Required by claude-code-action@v1 for GitHub token setup
-  
+
 jobs:
   triage-and-implement:
     runs-on: ubuntu-latest
@@ -18,7 +18,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: anthropics/claude-code-action@v1
+      - uses: anthropics/claude-code-action@a92e7c70a4da9793dc164451d829089dc057a464 # v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           show_full_output: true
