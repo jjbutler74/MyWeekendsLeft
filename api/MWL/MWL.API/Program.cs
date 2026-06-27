@@ -24,6 +24,3 @@ namespace MWL.API
                 });
     }
 }
-
-// Make Program class accessible to test projects
-public partial class Program { }
