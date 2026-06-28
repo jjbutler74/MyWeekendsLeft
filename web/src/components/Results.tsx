@@ -55,10 +55,30 @@ const ALL_TIPS = [
   "Be present - put your phone away",
 ];
 
+// Returns a cryptographically secure random integer in [0, maxExclusive).
+// Uses rejection sampling to avoid modulo bias. Falls back to Math.random()
+// only if the Web Crypto API is unavailable (e.g. very old/non-browser hosts).
+function secureRandomInt(maxExclusive: number): number {
+  const cryptoObj = globalThis.crypto;
+  if (!cryptoObj?.getRandomValues) {
+    return Math.floor(Math.random() * maxExclusive);
+  }
+  // Largest multiple of maxExclusive that fits in a Uint32, to reject the
+  // remainder and keep the distribution uniform.
+  const limit = Math.floor(0xffffffff / maxExclusive) * maxExclusive;
+  const buffer = new Uint32Array(1);
+  let value: number;
+  do {
+    cryptoObj.getRandomValues(buffer);
+    value = buffer[0];
+  } while (value >= limit);
+  return value % maxExclusive;
+}
+
 function getRandomTips(count: number): string[] {
   const shuffled = [...ALL_TIPS];
   for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = secureRandomInt(i + 1);
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
   return shuffled.slice(0, count);
