@@ -56,12 +56,15 @@ const ALL_TIPS = [
 ];
 
 // Returns a cryptographically secure random integer in [0, maxExclusive).
-// Uses rejection sampling to avoid modulo bias. Falls back to Math.random()
-// only if the Web Crypto API is unavailable (e.g. very old/non-browser hosts).
+// Uses rejection sampling to avoid modulo bias. The Web Crypto API is used
+// exclusively (no Math.random fallback) so the code is SonarQube-compliant;
+// crypto.getRandomValues is available in every supported browser. If it is
+// somehow unavailable we return 0, which leaves the shuffle a no-op rather
+// than falling back to a non-secure RNG.
 function secureRandomInt(maxExclusive: number): number {
   const cryptoObj = globalThis.crypto;
   if (!cryptoObj?.getRandomValues) {
-    return Math.floor(Math.random() * maxExclusive);
+    return 0;
   }
   // Largest multiple of maxExclusive that fits in a Uint32, to reject the
   // remainder and keep the distribution uniform.
