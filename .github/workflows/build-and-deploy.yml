@@ -324,6 +324,12 @@ jobs:
     needs: [deploy-dev, deploy-frontend-dev]
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy-pages.outputs.page_url }}
     if: |
       (github.ref == 'refs/heads/develop' && github.event_name == 'push') ||
       (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'dev')
@@ -349,7 +355,11 @@ jobs:
       env:
         # Without this, `apt-get install` (run internally by --with-deps) can hang
         # forever waiting on an interactive needrestart/debconf prompt that has no
-        # TTY to answer it - this hung every push-triggered run for days.
+        # TTY to answer it. Real, separate hardening - confirmed harmless and worth
+        # keeping even though it wasn't the cause of the install hang (see package.json:
+        # @playwright/test was on 1.58.1, inside the known-broken 1.55.1-1.60.0 range
+        # for microsoft/playwright#40998, which hangs during archive extraction after
+        # download. Fixed by upgrading to 1.61.1+).
         DEBIAN_FRONTEND: noninteractive
         NEEDRESTART_MODE: a
 
@@ -369,6 +379,17 @@ jobs:
         name: playwright-report
         path: ${{ env.WEB_WORKING_DIRECTORY }}/playwright-report
         retention-days: 7
+
+    - name: Upload Playwright Report to Pages
+      if: always()
+      uses: actions/upload-pages-artifact@v5
+      with:
+        path: ${{ env.WEB_WORKING_DIRECTORY }}/playwright-report
+
+    - name: Deploy Playwright Report to GitHub Pages
+      if: always()
+      id: deploy-pages
+      uses: actions/deploy-pages@v4
 
   deploy-frontend-uat:
     name: Deploy Frontend to UAT
