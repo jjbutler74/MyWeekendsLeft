@@ -349,9 +349,16 @@ jobs:
       env:
         # Without this, `apt-get install` (run internally by --with-deps) can hang
         # forever waiting on an interactive needrestart/debconf prompt that has no
-        # TTY to answer it - this hung every push-triggered run for days.
+        # TTY to answer it - confirmed clean now, but wasn't the actual cause of the
+        # hang below, so left in as real, separate hardening.
         DEBIAN_FRONTEND: noninteractive
         NEEDRESTART_MODE: a
+        # TEMPORARY: the install hangs silently for the full job timeout right after
+        # the Chrome binary download reaches 100%, with no further output. This
+        # turns on Playwright's own install tracing so the next run's log shows what
+        # it's actually doing post-download (extracting, validating, launching for a
+        # smoke test, etc.) instead of going dark. Remove once the real cause is found.
+        DEBUG: pw:install
 
     - name: Wait for deployment to stabilize
       run: sleep 30
