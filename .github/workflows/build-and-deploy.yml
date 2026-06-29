@@ -324,6 +324,12 @@ jobs:
     needs: [deploy-dev, deploy-frontend-dev]
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy-pages.outputs.page_url }}
     if: |
       (github.ref == 'refs/heads/develop' && github.event_name == 'push') ||
       (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'dev')
@@ -373,6 +379,17 @@ jobs:
         name: playwright-report
         path: ${{ env.WEB_WORKING_DIRECTORY }}/playwright-report
         retention-days: 7
+
+    - name: Upload Playwright Report to Pages
+      if: always()
+      uses: actions/upload-pages-artifact@v5
+      with:
+        path: ${{ env.WEB_WORKING_DIRECTORY }}/playwright-report
+
+    - name: Deploy Playwright Report to GitHub Pages
+      if: always()
+      id: deploy-pages
+      uses: actions/deploy-pages@v4
 
   deploy-frontend-uat:
     name: Deploy Frontend to UAT

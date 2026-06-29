@@ -68,6 +68,10 @@ cd web
 npm run test:e2e
 ```
 
+The latest E2E run against DEV publishes its full HTML report (with traces and screenshots on
+failure) to **[jjbutler74.github.io/MyWeekendsLeft](https://jjbutler74.github.io/MyWeekendsLeft/)**,
+updated on every push to `develop`.
+
 ## Features
 
 - Calculate remaining weekends based on life expectancy data
