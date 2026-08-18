@@ -49,4 +49,5 @@ export const COUNTRIES: Country[] = [
   { code: 'IND', name: 'India', flag: '🇮🇳' },
   { code: 'CHN', name: 'China', flag: '🇨🇳' },
   { code: 'KOR', name: 'South Korea', flag: '🇰🇷' },
+  { code: 'SWE', name: 'Sweden', flag: '🇸🇪' },
 ];
