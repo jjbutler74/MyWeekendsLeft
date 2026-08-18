@@ -50,4 +50,5 @@ export const COUNTRIES: Country[] = [
   { code: 'CHN', name: 'China', flag: '🇨🇳' },
   { code: 'KOR', name: 'South Korea', flag: '🇰🇷' },
   { code: 'SWE', name: 'Sweden', flag: '🇸🇪' },
+  { code: 'PRT', name: 'Portugal', flag: '🇵🇹' },
 ];
