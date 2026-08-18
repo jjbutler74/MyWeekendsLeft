@@ -89,5 +89,6 @@ describe('Calculator', () => {
     expect(screen.getByText(/United Kingdom/)).toBeInTheDocument();
     expect(screen.getByText(/Japan/)).toBeInTheDocument();
     expect(screen.getByText(/South Korea/)).toBeInTheDocument();
+    expect(screen.getByText(/Sweden/)).toBeInTheDocument();
   });
 });
