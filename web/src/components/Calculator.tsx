@@ -10,6 +10,9 @@ interface CalculatorProps {
 const MIN_AGE = 1;
 const MAX_AGE = 120;
 
+// Countries sorted alphabetically by name for display in the dropdown.
+const SORTED_COUNTRIES = [...COUNTRIES].sort((a, b) => a.name.localeCompare(b.name));
+
 // Clamp the raw input into a valid age, defaulting to MIN_AGE when empty/invalid.
 const clampAge = (value: string): number => {
   const parsed = Number.parseInt(value, 10);
@@ -104,7 +107,7 @@ export function Calculator({ onCalculate, isLoading, initialValues }: Calculator
             onChange={(e) => setCountry(e.target.value)}
             className="w-full px-4 py-3 text-lg border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:border-sunset-500 focus:ring-0 transition-colors bg-white dark:bg-gray-700 text-charcoal dark:text-gray-100"
           >
-            {COUNTRIES.map((c) => (
+            {SORTED_COUNTRIES.map((c) => (
               <option key={c.code} value={c.code}>
                 {c.flag} {c.name}
               </option>

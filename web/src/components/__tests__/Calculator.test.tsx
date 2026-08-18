@@ -91,4 +91,17 @@ describe('Calculator', () => {
     expect(screen.getByText(/South Korea/)).toBeInTheDocument();
     expect(screen.getByText(/Sweden/)).toBeInTheDocument();
   });
+
+  it('renders country options sorted alphabetically by name', () => {
+    render(<Calculator onCalculate={vi.fn()} isLoading={false} />);
+
+    const select = screen.getByLabelText('Country') as HTMLSelectElement;
+    // Strip the leading flag emoji so we compare on the country name text.
+    const names = Array.from(select.options).map((o) =>
+      o.textContent!.replace(/^[^A-Za-z]+/, '').trim()
+    );
+
+    const sorted = [...names].sort((a, b) => a.localeCompare(b));
+    expect(names).toEqual(sorted);
+  });
 });
